@@ -1,13 +1,14 @@
 import common
 
 type
-    NkTextAlign* = enum
-        nkTextAlignLeft    = 0x01
-        nkTextAlignCentred = 0x02
-        nkTextAlignRight   = 0x04
-        nkTextAlignTop     = 0x08
-        nkTextAlignMiddle  = 0x10
-        nkTextAlignBottom  = 0x20
+    NkTextAlign* = enum A, B
+    # NkTextAlign* = enum
+    #     nkTextAlignLeft    = 0x01
+    #     nkTextAlignCentred = 0x02
+    #     nkTextAlignRight   = 0x04
+    #     nkTextAlignTop     = 0x08
+    #     nkTextAlignMiddle  = 0x10
+    #     nkTextAlignBottom  = 0x20
 
     NkTextAlignment* = enum A, B
     # NkTextAlignment* = enum
@@ -15,20 +16,70 @@ type
         # nkTextCentred = nkTextAlignMiddle or nkTextAlignCentred
         # nkTextRight   = nkTextAlignMiddle or nkTextAlignRight
 
+    NkTextEditKind* = enum
+        nkTextEditSingleLine
+        nkTextEditMultiLine
+
+    NkTextEditMode* = enum
+        nkModeView
+        nkModeInsert
+        nkModeReplace
+
+type
+    NkTextEdit* = object
+        clip*     : NkClipboard
+        str*      : NkString
+        filter*   : NkPluginFilter
+        scrollbar*: NkVec2
+
+        cursor*   : int32
+        sel_start*: int32
+        sel_end*  : int32
+        mode*     : uint8
+
+        cursor_at_end_of_line*: uint8
+        initialized*          : uint8
+        has_preferred_x*      : uint8
+        single_line*          : uint8
+        active*               : uint8
+        _                     : uint8
+        preferred_x           : float32
+        undo*                 : NkTextUndoState
+
+    NkClipboard* = object
+        user_data*: NkHandle
+        paste*    : NkPluginPaste
+        copy*     : NkPluginCopy
+
+    NkTextUndoRecord* = object
+        where*       : int32
+        ins_len*     : int16
+        del_len*     : int16
+        char_storage*: int16
+
+    NkTextUndoState* = object
+        undo_rec*       : array[NkTextEditUndoStateCount, NkTextUndoRecord]
+        undo_char*      : array[NkTextEditUndoCharCount, NkRune]
+        undo_point*     : int16
+        redo_point*     : int16
+        undo_char_point*: int16
+        redo_char_point*: int16
+
 #[ -------------------------------------------------------------------- ]#
 
-type NkContext = object
-using ctx: ptr NkContext
+using
+    ctx : pointer
+    text: cstring
 
-proc nk_text*(ctx; txt: cstring; len: int32; flags: NkFlag) {.importc: "nk_text".}
-proc nk_text_coloured*(ctx; txt: cstring; len: int32; flags: NkFlag; colour: NkColour) {.importc: "nk_text_coloured".}
-proc nk_text_wrap*(ctx; txt: cstring; len: int32) {.importc: "nk_text_wrap".}
-proc nk_text_wrap_coloured*(ctx; txt: cstring; len: int32; colour: NkColour) {.importc: "nk_text_wrap_coloured".}
+proc nk_text*(ctx; text; len: int32; flags: NkFlag) {.importc: "nk_text".}
+proc nk_text_coloured*(ctx; text; len: int32; flags: NkFlag; colour: NkColour) {.importc: "nk_text_coloured".}
+proc nk_text_wrap*(ctx; text; len: int32) {.importc: "nk_text_wrap".}
+proc nk_text_wrap_coloured*(ctx; text; len: int32; colour: NkColour) {.importc: "nk_text_wrap_coloured".}
 
-proc nk_label*(ctx; txt: cstring; align: NkTextAlignment) {.importc: "nk_label".}
-proc nk_label_coloured*(ctx; txt: cstring; align: NkTextAlignment; colour: NkColour) {.importc: "nk_label_coloured".}
-proc nk_label_wrap*(ctx; txt: cstring) {.importc: "nk_label_wrap".}
-proc nk_label_coloured_wrap*(ctx; txt: cstring; colour: NkColour) {.importc: "nk_label_coloured_wrap".}
+proc nk_label*(ctx; text; align: NkTextAlignment) {.importc: "nk_label".}
+proc nk_label_coloured*(ctx; text; align: NkTextAlignment; colour: NkColour) {.importc: "nk_label_coloured".}
+proc nk_label_wrap*(ctx; text) {.importc: "nk_label_wrap".}
+proc nk_label_coloured_wrap*(ctx; text: cstring; colour: NkColour) {.importc: "nk_label_coloured_wrap".}
 
 proc nk_image*(ctx; img: NkImage) {.importc: "nk_image".}
 proc nk_image_colour*(ctx; img: NkImage; colour: NkColour) {.importc: "nk_image_colour".}
@@ -85,69 +136,6 @@ when defined NkIncludeStandardVarargs:
 # NK_API nk_flags nk_edit_buffer(struct nk_context*, nk_flags, struct nk_text_edit*, nk_plugin_filter);
 # NK_API void nk_edit_focus(struct nk_context*, nk_flags flags);
 # NK_API void nk_edit_unfocus(struct nk_context*);
-
-
-# #ifndef NK_TEXTEDIT_UNDOSTATECOUNT
-# #define NK_TEXTEDIT_UNDOSTATECOUNT     99
-# #endif
-
-# #ifndef NK_TEXTEDIT_UNDOCHARCOUNT
-# #define NK_TEXTEDIT_UNDOCHARCOUNT      999
-# #endif
-
-# struct nk_text_edit;
-# struct nk_clipboard {
-#     nk_handle userdata;
-#     nk_plugin_paste paste;
-#     nk_plugin_copy copy;
-# };
-
-# struct nk_text_undo_record {
-#    int where;
-#    short insert_length;
-#    short delete_length;
-#    short char_storage;
-# };
-
-# struct nk_text_undo_state {
-#    struct nk_text_undo_record undo_rec[NK_TEXTEDIT_UNDOSTATECOUNT];
-#    nk_rune undo_char[NK_TEXTEDIT_UNDOCHARCOUNT];
-#    short undo_point;
-#    short redo_point;
-#    short undo_char_point;
-#    short redo_char_point;
-# };
-
-# enum nk_text_edit_type {
-#     NK_TEXT_EDIT_SINGLE_LINE,
-#     NK_TEXT_EDIT_MULTI_LINE
-# };
-
-# enum nk_text_edit_mode {
-#     NK_TEXT_EDIT_MODE_VIEW,
-#     NK_TEXT_EDIT_MODE_INSERT,
-#     NK_TEXT_EDIT_MODE_REPLACE
-# };
-
-# struct nk_text_edit {
-#     struct nk_clipboard clip;
-#     struct nk_str string;
-#     nk_plugin_filter filter;
-#     struct nk_vec2 scrollbar;
-
-#     int cursor;
-#     int select_start;
-#     int select_end;
-#     unsigned char mode;
-#     unsigned char cursor_at_end_of_line;
-#     unsigned char initialized;
-#     unsigned char has_preferred_x;
-#     unsigned char single_line;
-#     unsigned char active;
-#     unsigned char padding1;
-#     float preferred_x;
-#     struct nk_text_undo_state undo;
-# };
 
 # /* filter function */
 # NK_API nk_bool nk_filter_default(const struct nk_text_edit*, nk_rune unicode);

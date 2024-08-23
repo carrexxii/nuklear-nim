@@ -4,7 +4,7 @@ const NkWidgetDisableFactor* = 0.5'f32
 
 {.push size: sizeof(NkFlag).}
 type
-    NkStylColours* = enum
+    NkStyleColours* = enum
         nkColourText
         nkColourWindow
         nkColourHeader

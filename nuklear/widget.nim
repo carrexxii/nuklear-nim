@@ -44,12 +44,12 @@ type
 #[ -------------------------------------------------------------------- ]#
 
 using
-    ctx      : pointer
-    txt      : cstring
-    sym      : NkSymbolKind
-    img      : NkImage
-    align    : NkTextAlignment
-    bnt_style: ptr NkStyleButton
+    ctx        : pointer
+    text, label: cstring
+    sym        : NkSymbolKind
+    img        : NkImage
+    align      : NkTextAlignment
+    bnt_style  : ptr NkStyleButton
 
 proc nk_widget*(rect: ptr NkRect; ctx): NkWidgetLayoutState                      {.importc: "nk_widget"                     .}
 proc nk_widget_fitting*(rect: ptr NkRect; ctx; pos: NkVec2): NkWidgetLayoutState {.importc: "nk_widget_fitting"             .}
@@ -66,33 +66,36 @@ proc nk_spacing*(ctx; cols: int32) {.importc: "nk_spacing"             .}
 proc nk_widget_disable_begin*(ctx) {.importc: "nk_widget_disable_begin".}
 proc nk_widget_disable_end*(ctx)   {.importc: "nk_widget_disable_end"  .}
 
-proc nk_button_text*(ctx; txt; len: int32): bool                                      {.importc: "nk_button_text"               .}
-proc nk_button_label*(ctx; txt): bool                                                 {.importc: "nk_button_label"              .}
-proc nk_button_colour*(ctx; colour: NkColour): bool                                   {.importc: "nk_button_colour"             .}
-proc nk_button_symbol*(ctx; sym): bool                                                {.importc: "nk_button_symbol"             .}
-proc nk_button_image*(ctx; img): bool                                                 {.importc: "nk_button_image"              .}
-proc nk_button_symbol_label*(ctx; sym; txt; align): bool                              {.importc: "nk_button_symbol_label"       .}
-proc nk_button_symbol_text*(ctx; sym; txt; len: int32; align): bool                   {.importc: "nk_button_symbol_text"        .}
-proc nk_button_image_label*(ctx; img; txt; align): bool                               {.importc: "nk_button_image_label"        .}
-proc nk_button_image_text*(ctx; img; txt; len: int32; align): bool                    {.importc: "nk_button_image_text"         .}
-proc nk_button_text_styled*(ctx; bnt_style; txt; len: int32): bool                    {.importc: "nk_button_text_styled"        .}
-proc nk_button_label_styled*(ctx; bnt_style; txt): bool                               {.importc: "nk_button_label_styled"       .}
-proc nk_button_symbol_styled*(ctx; bnt_style; sym): bool                              {.importc: "nk_button_symbol_styled"      .}
-proc nk_button_image_styled*(ctx; bnt_style; img): bool                               {.importc: "nk_button_image_styled"       .}
-proc nk_button_symbol_text_styled*(ctx; bnt_style; sym; txt; len: int32; align): bool {.importc: "nk_button_symbol_text_styled" .}
-proc nk_button_symbol_label_styled*(ctx; bnt_style; sym; txt; align): bool            {.importc: "nk_button_symbol_label_styled".}
-proc nk_button_image_label_styled*(ctx; bnt_style; img; txt; align): bool             {.importc: "nk_button_image_label_styled" .}
-proc nk_button_image_text_styled*(ctx; bnt_style; img; txt; len: int32; align): bool  {.importc: "nk_button_image_text_styled"  .}
-proc nk_button_set_behavior*(ctx; behaviour: NkButtonBehaviour)                       {.importc: "nk_button_set_behavior"       .}
-proc nk_button_push_behavior*(ctx; behaviour: NkButtonBehaviour): bool                {.importc: "nk_button_push_behavior"      .}
-proc nk_button_pop_behavior*(ctx): bool                                               {.importc: "nk_button_pop_behavior"       .}
+{.push discardable.}
+proc nk_button_text*(ctx; text; len: int32): bool                                      {.importc: "nk_button_text"               .}
+proc nk_button_label*(ctx; text): bool                                                 {.importc: "nk_button_label"              .}
+proc nk_button_colour*(ctx; colour: NkColour): bool                                    {.importc: "nk_button_colour"             .}
+proc nk_button_symbol*(ctx; sym): bool                                                 {.importc: "nk_button_symbol"             .}
+proc nk_button_image*(ctx; img): bool                                                  {.importc: "nk_button_image"              .}
+proc nk_button_symbol_label*(ctx; sym; text; align): bool                              {.importc: "nk_button_symbol_label"       .}
+proc nk_button_symbol_text*(ctx; sym; text; len: int32; align): bool                   {.importc: "nk_button_symbol_text"        .}
+proc nk_button_image_label*(ctx; img; text; align): bool                               {.importc: "nk_button_image_label"        .}
+proc nk_button_image_text*(ctx; img; text; len: int32; align): bool                    {.importc: "nk_button_image_text"         .}
+proc nk_button_text_styled*(ctx; bnt_style; text; len: int32): bool                    {.importc: "nk_button_text_styled"        .}
+proc nk_button_label_styled*(ctx; bnt_style; text): bool                               {.importc: "nk_button_label_styled"       .}
+proc nk_button_symbol_styled*(ctx; bnt_style; sym): bool                               {.importc: "nk_button_symbol_styled"      .}
+proc nk_button_image_styled*(ctx; bnt_style; img): bool                                {.importc: "nk_button_image_styled"       .}
+proc nk_button_symbol_text_styled*(ctx; bnt_style; sym; text; len: int32; align): bool {.importc: "nk_button_symbol_text_styled" .}
+proc nk_button_symbol_label_styled*(ctx; bnt_style; sym; text; align): bool            {.importc: "nk_button_symbol_label_styled".}
+proc nk_button_image_label_styled*(ctx; bnt_style; img; text; align): bool             {.importc: "nk_button_image_label_styled" .}
+proc nk_button_image_text_styled*(ctx; bnt_style; img; text; len: int32; align): bool  {.importc: "nk_button_image_text_styled"  .}
+proc nk_button_set_behavior*(ctx; behaviour: NkButtonBehaviour)                        {.importc: "nk_button_set_behavior"       .}
+proc nk_button_push_behavior*(ctx; behaviour: NkButtonBehaviour): bool                 {.importc: "nk_button_push_behavior"      .}
+proc nk_button_pop_behavior*(ctx): bool                                                {.importc: "nk_button_pop_behavior"       .}
 
+proc nk_option_label*(ctx; label; active: bool): bool                                                  {.importc: "nk_option_label"      .}
+proc nk_option_label_align*(ctx; label; active: bool; widget_align, text_align: NkTextAlignment): bool {.importc: "nk_option_label_align".}
 
-# Slider
+proc nk_slider_float*(ctx; min: float32; val: ptr float32; max, step: float32): bool {.importc: "nk_slider_float".}
 # NK_API float nk_slide_float(struct nk_context*, float min, float val, float max, float step);
 # NK_API int nk_slide_int(struct nk_context*, int min, int val, int max, int step);
-# NK_API nk_bool nk_slider_float(struct nk_context*, float min, float *val, float max, float step);
 # NK_API nk_bool nk_slider_int(struct nk_context*, int min, int *val, int max, int step);
+{.pop.}
 
 # Checkbox
 # NK_API nk_bool nk_check_label(struct nk_context*, const char*, nk_bool active);
@@ -112,8 +115,6 @@ proc nk_button_pop_behavior*(ctx): bool                                         
 # NK_API nk_bool nk_radio_label_align(struct nk_context *ctx, const char *label, nk_bool *active, nk_flags widget_alignment, nk_flags text_alignment);
 # NK_API nk_bool nk_radio_text(struct nk_context*, const char*, int, nk_bool *active);
 # NK_API nk_bool nk_radio_text_align(struct nk_context *ctx, const char *text, int len, nk_bool *active, nk_flags widget_alignment, nk_flags text_alignment);
-# NK_API nk_bool nk_option_label(struct nk_context*, const char*, nk_bool active);
-# NK_API nk_bool nk_option_label_align(struct nk_context *ctx, const char *label, nk_bool active, nk_flags widget_alignment, nk_flags text_alignment);
 # NK_API nk_bool nk_option_text(struct nk_context*, const char*, int, nk_bool active);
 # NK_API nk_bool nk_option_text_align(struct nk_context *ctx, const char *text, int len, nk_bool is_active, nk_flags widget_alignment, nk_flags text_alignment);
 
