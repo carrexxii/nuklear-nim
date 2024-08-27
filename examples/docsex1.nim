@@ -1,6 +1,6 @@
 # immediate-mode-ui.github.io/Nuklear/doc/#nuklear/example
 
-import nuklear
+import nuklear as nk
 
 type States = enum
     easy
@@ -9,9 +9,9 @@ type States = enum
 let val = 0.6'f32
 let i   = 20'i32
 var op  = easy
-var ctx: NkContext
+var ctx = nk.init()
 # nk_init_fixed(&ctx, calloc(1, MAX_MEMORY), MAX_MEMORY, &font);
-nk_init_fixed ctx.addr, alloc 10000, 10000, nil
+# nk_init_fixed ctx.addr, alloc 10000, 10000, nil
 # if (nk_begin(&ctx, "Show", nk_rect(50, 50, 220, 220), NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_CLOSABLE)) {
 if nk_begin(ctx.addr, "Show", NkRect(x: 50, y: 50, w: 220, h: 200), nkWinBorder.ord or nkWinMovable.ord or nkWinClosable.ord):
 #     nk_layout_row_static(&ctx, 30, 80, 1);

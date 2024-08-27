@@ -167,6 +167,15 @@ type
         calls*      : uint
         sz*         : uint
 
+converter `pointer -> NkHandle`*(p: pointer): NkHandle =
+    result.p = p
+
+proc nim_alloc*(handle: NkHandle; old: pointer; sz: uint): pointer =
+    old.realloc sz
+
+proc nim_dealloc*(handle: NkHandle; old: pointer) =
+    dealloc old
+
 # #define NK_PI 3.141592654f
 # #define NK_UTF_INVALID 0xFFFD
 # #define NK_MAX_FLOAT_PRECISION 2

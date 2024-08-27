@@ -75,3 +75,18 @@ proc nk_init_custom*(ctx; cmds: ptr NkBuffer; pool: ptr NkBuffer; font: ptr NkUs
 proc nk_clear*(ctx)                                                                           {.importc: "nk_clear"      .}
 proc nk_free*(ctx)                                                                            {.importc: "nk_free"       .}
 {.pop.}
+
+proc init*(): NkContext =
+    let allocator = NkAllocator(
+        alloc: nim_alloc,
+        free : nim_dealloc,
+    )
+    var font: NkUserFont
+    let font = NkUserFont(
+        user_data: nil,
+        w: 1,
+        h: nil,
+    )
+
+    if not nk_init(result.addr, allocator.addr, font.addr):
+        echo "Failed to create Nuklear context"

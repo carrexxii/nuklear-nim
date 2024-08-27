@@ -14,35 +14,35 @@ type
         nkConvertElementBufferFull = 1 shl 3
 
     NkDrawVertexLayoutAttribute* = enum
-        nkVertexPosition
-        nkVertexColour
-        nkVertexTexcoord
+        nkVertPosition
+        nkVertColour
+        nkVertTexcoord
 
     NkDrawVertexLayoutFormat* = enum
-        nkFormatSchar
-        nkFormatSshort
-        nkFormatSint
-        nkFormatUchar
-        nkFormatUshort
-        nkFormatUint
-        nkFormatFloat
-        nkFormatDouble
+        nkFmtSchar
+        nkFmtSshort
+        nkFmtSint
+        nkFmtUchar
+        nkFmtUshort
+        nkFmtUint
+        nkFmtFloat
+        nkFmtDouble
 
-        nkFormatR8G8B8
-        nkFormatR16G15B16
-        nkFormatR32G32B32
-        nkFormatR8G8B8A8
-        nkFormatB8G8R8A8
-        nkFormatR16G15B16A16
-        nkFormatR32G32B32A32
-        nkFormatR32G32B32A32Float
-        nkFormatR32G32B32A32Double
-        nkFormatRgb32
-        nkFormatRgba32
+        nkFmtR8G8B8
+        nkFmtR16G15B16
+        nkFmtR32G32B32
+        nkFmtR8G8B8A8
+        nkFmtB8G8R8A8
+        nkFmtR16G15B16A16
+        nkFmtR32G32B32A32
+        nkFmtR32G32B32A32Float
+        nkFmtR32G32B32A32Double
+        nkFmtRgb32
+        nkFmtRgba32
 {.pop.} # size: sizeof(cint)
 
-const nkFormatColourStart* = nkFormatR8G8B8
-const nkFormatColourEnd*   = nkFormatRgba32
+const nkFmtColourStart* = nkFmtR8G8B8
+const nkFmtColourEnd*   = nkFmtRgba32
 
 type
     NkDrawNullTexture* = object

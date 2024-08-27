@@ -1,4 +1,13 @@
-import common
+import common, drawing
+
+type
+    NkFontAtlasFormat* = enum
+        nkFontAtlasAlpha8
+        nkFontAtlasRgba32
+
+    NkFontCoordKind* = enum
+        nkCoordUv
+        nkCoordPixel
 
 type
     NkTextWidthFn*      = proc(handle: NkHandle; h: float32; text: cstring; len: int32): float32
@@ -18,132 +27,96 @@ type
         w*, h*    : float32
         x_advance*: float32
 
-# #ifdef NK_INCLUDE_FONT_BAKING
-# enum nk_font_coord_type {
-#     NK_COORD_UV, /* texture coordinates inside font glyphs are clamped between 0-1 */
-#     NK_COORD_PIXEL /* texture coordinates inside font glyphs are in absolute pixel */
-# };
+    NkFontGlyph* = object
+        codepoint*: NkRune
+        x0*, y0*  : float32
+        x1*, y1*  : float32
+        w*, h*    : float32
+        u0*, v0*  : float32
+        u1*, v1*  : float32
 
-# struct nk_font;
-# struct nk_baked_font {
-#     float height;
-#     /* height of the font  */
-#     float ascent, descent;
-#     /* font glyphs ascent and descent  */
-#     nk_rune glyph_offset;
-#     /* glyph array offset inside the font glyph baking output array  */
-#     nk_rune glyph_count;
-#     /* number of glyphs of this font inside the glyph baking array output */
-#     const nk_rune *ranges;
-#     /* font codepoint ranges as pairs of (from/to) and 0 as last element */
-# };
+    NkFont* = object
+        next*              : ptr NkFont
+        handle*            : NkUserFont
+        info*              : NkBakedFont
+        scale*             : float32
+        glyphs*            : ptr NkFontGlyph
+        fallback*          : ptr NkFontGlyph
+        fallback_codepoint*: NkRune
+        tex*               : NkHandle
+        config*            : ptr NkFontConfig
 
-# struct nk_font_config {
-#     struct nk_font_config *next;
-#     /* NOTE: only used internally */
-#     void *ttf_blob;
-#     /* pointer to loaded TTF file memory block.
-#      * NOTE: not needed for nk_font_atlas_add_from_memory and nk_font_atlas_add_from_file. */
-#     nk_size ttf_size;
-#     /* size of the loaded TTF file memory block
-#      * NOTE: not needed for nk_font_atlas_add_from_memory and nk_font_atlas_add_from_file. */
+    NkBakedFont* = object
+        h*           : float32
+        ascent*      : float32
+        descent*     : float32
+        glyph_offset*: NkRune
+        glyph_count* : NkRune
+        ranges*      : ptr NkRune
 
-#     unsigned char ttf_data_owned_by_atlas;
-#     /* used inside font atlas: default to: 0*/
-#     unsigned char merge_mode;
-#     /* merges this font into the last font */
-#     unsigned char pixel_snap;
-#     /* align every character to pixel boundary (if true set oversample (1,1)) */
-#     unsigned char oversample_v, oversample_h;
-#     /* rasterize at high quality for sub-pixel position */
-#     unsigned char padding[3];
+    NkFontConfig* = object
+        next*    : ptr NkFontConfig
+        ttf_blob*: pointer
+        ttf_sz*  : uint
 
-#     float size;
-#     /* baked pixel height of the font */
-#     enum nk_font_coord_type coord_type;
-#     /* texture coordinate format with either pixel or UV coordinates */
-#     struct nk_vec2 spacing;
-#     /* extra pixel spacing between glyphs  */
-#     const nk_rune *range;
-#     /* list of unicode ranges (2 values per range, zero terminated) */
-#     struct nk_baked_font *font;
-#     /* font to setup in the baking process: NOTE: not needed for font atlas */
-#     nk_rune fallback_glyph;
-#     /* fallback glyph to use if a given rune is not found */
-#     struct nk_font_config *n;
-#     struct nk_font_config *p;
-# };
+        ttf_data_owned_by_atlas*: uint8
+        merge_mode*             : uint8
+        px_snap*                : uint8
+        oversample_v*           : uint8
+        oversample_h*           : uint8
+        _*                      : array[3, uint8]
 
-# struct nk_font_glyph {
-#     nk_rune codepoint;
-#     float xadvance;
-#     float x0, y0, x1, y1, w, h;
-#     float u0, v0, u1, v1;
-# };
+        sz*            : float32
+        coord_kind*    : NkFontCoordKind
+        spacing*       : NkVec2
+        range*         : ptr NkRune
+        font*          : ptr NkBakedFont
+        fallback_glyph*: NkRune
+        n*             : ptr NkFontConfig
+        p*             : ptr NkFontConfig
 
-# struct nk_font {
-#     struct nk_font *next;
-#     struct nk_user_font handle;
-#     struct nk_baked_font info;
-#     float scale;
-#     struct nk_font_glyph *glyphs;
-#     const struct nk_font_glyph *fallback;
-#     nk_rune fallback_codepoint;
-#     nk_handle texture;
-#     struct nk_font_config *config;
-# };
+    NkFontAtlas* = object
+        pxs*  : pointer
+        w*, h*: int32
 
-# enum nk_font_atlas_format {
-#     NK_FONT_ATLAS_ALPHA8,
-#     NK_FONT_ATLAS_RGBA32
-# };
+        permanent*: NkAllocator
+        temporary*: NkAllocator
 
-# struct nk_font_atlas {
-#     void *pixel;
-#     int tex_width;
-#     int tex_height;
+        custom* : NkRectI
+        cursors*: array[7, NkCursor] # NkStyleCursor.high
 
-#     struct nk_allocator permanent;
-#     struct nk_allocator temporary;
+        glyph_count* : int32
+        glyphs*      : ptr NkFontGlyph
+        default_font*: ptr NkFont
+        fonts*       : ptr NkFont
+        config*      : ptr NkFontConfig
+        font_count*  : int32
 
-#     struct nk_recti custom;
-#     struct nk_cursor cursors[NK_CURSOR_COUNT];
+#[ -------------------------------------------------------------------- ]#
 
-#     int glyph_count;
-#     struct nk_font_glyph *glyphs;
-#     struct nk_font *default_font;
-#     struct nk_font *fonts;
-#     struct nk_font_config *config;
-#     int font_num;
-# };
+using atlas: ptr NkFontAtlas
 
-# /* some language glyph codepoint ranges */
-# NK_API const nk_rune *nk_font_default_glyph_ranges(void);
-# NK_API const nk_rune *nk_font_chinese_glyph_ranges(void);
-# NK_API const nk_rune *nk_font_cyrillic_glyph_ranges(void);
-# NK_API const nk_rune *nk_font_korean_glyph_ranges(void);
+proc nk_font_default_glyph_ranges*() : ptr NkRune {.importc: "nk_font_default_glyph_ranges" .}
+proc nk_font_chinese_glyph_ranges*() : ptr NkRune {.importc: "nk_font_chinese_glyph_ranges" .}
+proc nk_font_cyrillic_glyph_ranges*(): ptr NkRune {.importc: "nk_font_cyrillic_glyph_ranges".}
+proc nk_font_korean_glyph_ranges*()  : ptr NkRune {.importc: "nk_font_korean_glyph_ranges"  .}
 
-# #ifdef NK_INCLUDE_DEFAULT_ALLOCATOR
-# NK_API void nk_font_atlas_init_default(struct nk_font_atlas*);
-# #endif
-# NK_API void nk_font_atlas_init(struct nk_font_atlas*, const struct nk_allocator*);
-# NK_API void nk_font_atlas_init_custom(struct nk_font_atlas*, const struct nk_allocator *persistent, const struct nk_allocator *transient);
-# NK_API void nk_font_atlas_begin(struct nk_font_atlas*);
-# NK_API struct nk_font_config nk_font_config(float pixel_height);
-# NK_API struct nk_font *nk_font_atlas_add(struct nk_font_atlas*, const struct nk_font_config*);
-# #ifdef NK_INCLUDE_DEFAULT_FONT
-# NK_API struct nk_font* nk_font_atlas_add_default(struct nk_font_atlas*, float height, const struct nk_font_config*);
-# #endif
-# NK_API struct nk_font* nk_font_atlas_add_from_memory(struct nk_font_atlas *atlas, void *memory, nk_size size, float height, const struct nk_font_config *config);
-# #ifdef NK_INCLUDE_STANDARD_IO
-# NK_API struct nk_font* nk_font_atlas_add_from_file(struct nk_font_atlas *atlas, const char *file_path, float height, const struct nk_font_config*);
-# #endif
-# NK_API struct nk_font *nk_font_atlas_add_compressed(struct nk_font_atlas*, void *memory, nk_size size, float height, const struct nk_font_config*);
-# NK_API struct nk_font* nk_font_atlas_add_compressed_base85(struct nk_font_atlas*, const char *data, float height, const struct nk_font_config *config);
-# NK_API const void* nk_font_atlas_bake(struct nk_font_atlas*, int *width, int *height, enum nk_font_atlas_format);
-# NK_API void nk_font_atlas_end(struct nk_font_atlas*, nk_handle tex, struct nk_draw_null_texture*);
-# NK_API const struct nk_font_glyph* nk_font_find_glyph(struct nk_font*, nk_rune unicode);
-# NK_API void nk_font_atlas_cleanup(struct nk_font_atlas *atlas);
-# NK_API void nk_font_atlas_clear(struct nk_font_atlas*);
-
-# #endif
+when defined NkIncludeDefaultAllocator:
+    proc nk_font_atlas_init_default*(atlas) {.importc: "nk_font_atlas_init_default".}
+proc nk_font_atlas_init*(atlas; alloc: ptr NkAllocator)                        {.importc: "nk_font_atlas_init"       .}
+proc nk_font_atlas_init_custom*(atlas; persistent, transient: ptr NkAllocator) {.importc: "nk_font_atlas_init_custom".}
+proc nk_font_atlas_begin*(atlas)                                               {.importc: "nk_font_atlas_begin"      .}
+proc nk_font_config*(px_h: float32): NkFontConfig                              {.importc: "nk_font_config"           .}
+proc nk_font_atlas_add*(atlas; cfg: ptr NkFontConfig): ptr NkFont              {.importc: "nk_font_atlas_add"        .}
+when defined NkIncludeDefaultFont:
+    proc nk_font_atlas_add_default*(atlas; h: float32; cfg: ptr NkFontConfig): ptr NkFont {.importc: "nk_font_atlas_add_default".}
+proc nk_font_atlas_add_from_memory*(atlas; mem: pointer; sz: uint; h: float32; cfg: ptr NkFontConfig): ptr NkFont {.importc: "nk_font_atlas_add_from_memory".}
+when defined NkIncludeStandardIo:
+    proc nk_font_atlas_add_from_file*(atlas; path: cstring; h: float32; cfg: ptr NkFontConfig): ptr NkFont {.importc: "nk_font_atlas_add_from_file".}
+proc nk_font_atlas_add_compressed*(atlas; mem: pointer; sz: uint; h: float32; cfg: ptr NkFontConfig): ptr NkFont {.importc: "nk_font_atlas_add_compressed"       .}
+proc nk_font_atlas_add_compressed_base85*(atlas; data: ptr uint8; h: float32; cfg: ptr NkFontConfig): ptr NkFont {.importc: "nk_font_atlas_add_compressed_base85".}
+proc nk_font_atlas_bake*(atlas; w, h: ptr int32; fmt: NkFontAtlasFormat): pointer                                {.importc: "nk_font_atlas_bake"                 .}
+proc nk_font_atlas_end*(atlas; tex: NkHandle; draw_tex: ptr NkDrawNullTexture)                                   {.importc: "nk_font_atlas_end"                  .}
+proc nk_font_find_glyph*(font: ptr NkFont; c: NkRune): ptr NkFontGlyph                                           {.importc: "nk_font_find_glyph"                 .}
+proc nk_font_atlas_cleanup*(atlas)                                                                               {.importc: "nk_font_atlas_cleanup"              .}
+proc nk_font_atlas_clear*(atlas)                                                                                 {.importc: "nk_font_atlas_clear"                .}

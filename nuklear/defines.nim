@@ -15,4 +15,5 @@ const
     NkTextEditUndoStateCount*   {.intdefine.} = 99'i32
     NkTextEditUndoCharCount*    {.intdefine.} = 999'i32
 
-# NkIncludeDefaultAllocator
+when defined NkIncludeDefaultAllocator: {.emit: "#define NK_INCLUDE_DEFAULT_ALLOCATOR".}
+when defined NkIncludeDefaultFont     : {.emit: "#define NK_INCLUDE_DEFAULT_FONT"     .}

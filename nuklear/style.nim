@@ -44,9 +44,9 @@ type
         nkCursorResizeTopRightDownLeft
 
     NkStyleItemKind* = enum
-        nkStyleItemColour
-        nkStyleItemImage
-        nkStyleItemNineSlice
+        nkItemColour
+        nkItemImage
+        nkItemNineSlice
 
     NkStyleHeaderAlign* = enum
         nkHeaderLeft
