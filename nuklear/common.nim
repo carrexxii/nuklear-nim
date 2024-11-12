@@ -2,11 +2,14 @@ import defines
 export defines
 
 const
-    NkUtfSize*    = 4'i32
-    NkUtfInvalid* = 0xFFFD'u32
-    NkPi*         = 3.141592654'f32
+    NkUtfSize*           = 4'i32
+    NkUtfInvalid*        = 0xFFFD'u32
+    NkPi*                = 3.141592654'f32
+    NkMaxFloatPrecision* = 2'i32
 
 type NkTextEdit = object
+
+type NuklearError* = CatchableError
 
 type
     NkHeadingKind* = enum
@@ -129,11 +132,11 @@ type
         buf*: NkBuffer
         len*: int32
 
-    NkPluginAlloc*  = proc(handle: NkHandle; old: pointer; sz: uint): pointer
-    NkPluginFree*   = proc(handle: NkHandle; old: pointer)
-    NkPluginFilter* = proc(te: ptr NkTextEdit; unicode: NkRune): bool
-    NkPluginPaste*  = proc(handle: NkHandle; te: ptr NkTextEdit)
-    NkPluginCopy*   = proc(handle: NkHandle; str: cstring; len: int32)
+    NkPluginAlloc*  = proc(handle: NkHandle; old: pointer; sz: uint): pointer {.cdecl.}
+    NkPluginFree*   = proc(handle: NkHandle; old: pointer)                    {.cdecl.}
+    NkPluginFilter* = proc(te: ptr NkTextEdit; unicode: NkRune): bool         {.cdecl.}
+    NkPluginPaste*  = proc(handle: NkHandle; te: ptr NkTextEdit)              {.cdecl.}
+    NkPluginCopy*   = proc(handle: NkHandle; str: cstring; len: int32)        {.cdecl.}
 
     NkMemoryStatus* = object
         mem*    : pointer
@@ -167,18 +170,38 @@ type
         calls*      : uint
         sz*         : uint
 
+#[ -------------------------------------------------------------------- ]#
+
 converter `pointer -> NkHandle`*(p: pointer): NkHandle =
     result.p = p
 
-proc nim_alloc*(handle: NkHandle; old: pointer; sz: uint): pointer =
+proc nim_alloc*(handle: NkHandle; old: pointer; sz: uint): pointer {.cdecl.} =
     old.realloc sz
 
-proc nim_dealloc*(handle: NkHandle; old: pointer) =
+proc nim_free*(handle: NkHandle; old: pointer) {.cdecl.} =
     dealloc old
 
-# #define NK_PI 3.141592654f
-# #define NK_UTF_INVALID 0xFFFD
-# #define NK_MAX_FLOAT_PRECISION 2
+const NimAllocator* = NkAllocator(
+    user_data: nil,
+    alloc    : nim_alloc,
+    free     : nim_free,
+)
+
+using buf: ptr NkBuffer
+
+when defined NkIncludeDefaultAllocator:
+    proc nk_buffer_init_default*(buf) {.importc: "nk_buffer_init_default".}
+proc nk_buffer_init*(buf; allocator: ptr NkAllocator; sz: uint)                        {.importc: "nk_buffer_init"        .}
+proc nk_buffer_init_fixed*(buf; mem: pointer; sz: uint)                                {.importc: "nk_buffer_init_fixed"  .}
+proc nk_buffer_info*(status: ptr NkMemoryStatus; buf)                                  {.importc: "nk_buffer_info"        .}
+proc nk_buffer_push*(buf; kind: NkBufferAllocationKind; mem: pointer; sz, align: uint) {.importc: "nk_buffer_push"        .}
+proc nk_buffer_mark*(buf; kind: NkBufferAllocationKind)                                {.importc: "nk_buffer_mark"        .}
+proc nk_buffer_reset*(buf; kind: NkBufferAllocationKind)                               {.importc: "nk_buffer_reset"       .}
+proc nk_buffer_clear*(buf)                                                             {.importc: "nk_buffer_clear"       .}
+proc nk_buffer_free*(buf)                                                              {.importc: "nk_buffer_free"        .}
+proc nk_buffer_memory*(buf): pointer                                                   {.importc: "nk_buffer_memory"      .}
+proc nk_buffer_memory_const*(buf): pointer                                             {.importc: "nk_buffer_memory_const".}
+proc nk_buffer_total*(buf): uint                                                       {.importc: "nk_buffer_total"       .}
 
 # #define NK_UNUSED(x) ((void)(x))
 # #define NK_SATURATE(x) (NK_MAX(0, NK_MIN(1.0f, x)))
@@ -201,21 +224,6 @@ proc nim_dealloc*(handle: NkHandle; old: pointer) =
 # #define nk_ptr_add(t, p, i) ((t*)((void*)((nk_byte*)(p) + (i))))
 # #define nk_ptr_add_const(t, p, i) ((const t*)((const void*)((const nk_byte*)(p) + (i))))
 # #define nk_zero_struct(s) nk_zero(&s, sizeof(s))
-
-# #ifdef NK_INCLUDE_DEFAULT_ALLOCATOR
-# NK_API void nk_buffer_init_default(struct nk_buffer*);
-# #endif
-# NK_API void nk_buffer_init(struct nk_buffer*, const struct nk_allocator*, nk_size size);
-# NK_API void nk_buffer_init_fixed(struct nk_buffer*, void *memory, nk_size size);
-# NK_API void nk_buffer_info(struct nk_memory_status*, struct nk_buffer*);
-# NK_API void nk_buffer_push(struct nk_buffer*, enum nk_buffer_allocation_type type, const void *memory, nk_size size, nk_size align);
-# NK_API void nk_buffer_mark(struct nk_buffer*, enum nk_buffer_allocation_type type);
-# NK_API void nk_buffer_reset(struct nk_buffer*, enum nk_buffer_allocation_type type);
-# NK_API void nk_buffer_clear(struct nk_buffer*);
-# NK_API void nk_buffer_free(struct nk_buffer*);
-# NK_API void *nk_buffer_memory(struct nk_buffer*);
-# NK_API const void *nk_buffer_memory_const(const struct nk_buffer*);
-# NK_API nk_size nk_buffer_total(struct nk_buffer*);
 
 # NK_API struct nk_color nk_rgb(int r, int g, int b);
 # NK_API struct nk_color nk_rgb_iv(const int *rgb);

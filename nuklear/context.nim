@@ -68,25 +68,8 @@ when defined NkIncludeDefaultAllocator:
     {.passC: "-DNK_INCLUDE_DEFAULT_ALLOCATOR".}
     proc nk_init_default*(ctx; font: ptr NkUserFont): bool {.importc: "nk_init_default".}
 
-{.push discardable.}
 proc nk_init_fixed*(ctx; mem: pointer; sz: uint; font: ptr NkUserFont): bool                  {.importc: "nk_init_fixed" .}
 proc nk_init*(ctx; allocator: ptr NkAllocator; font: ptr NkUserFont): bool                    {.importc: "nk_init"       .}
 proc nk_init_custom*(ctx; cmds: ptr NkBuffer; pool: ptr NkBuffer; font: ptr NkUserFont): bool {.importc: "nk_init_custom".}
 proc nk_clear*(ctx)                                                                           {.importc: "nk_clear"      .}
 proc nk_free*(ctx)                                                                            {.importc: "nk_free"       .}
-{.pop.}
-
-proc init*(): NkContext =
-    let allocator = NkAllocator(
-        alloc: nim_alloc,
-        free : nim_dealloc,
-    )
-    var font: NkUserFont
-    let font = NkUserFont(
-        user_data: nil,
-        w: 1,
-        h: nil,
-    )
-
-    if not nk_init(result.addr, allocator.addr, font.addr):
-        echo "Failed to create Nuklear context"
