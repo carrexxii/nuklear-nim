@@ -98,10 +98,10 @@ using
     atlas: ptr NkFontAtlas
     cfg  : ptr NkFontConfig
 
-proc nk_font_default_glyph_ranges*() : ptr NkRune {.importc: "nk_font_default_glyph_ranges" .}
-proc nk_font_chinese_glyph_ranges*() : ptr NkRune {.importc: "nk_font_chinese_glyph_ranges" .}
+proc nk_font_default_glyph_ranges*(): ptr NkRune  {.importc: "nk_font_default_glyph_ranges" .}
+proc nk_font_chinese_glyph_ranges*(): ptr NkRune  {.importc: "nk_font_chinese_glyph_ranges" .}
 proc nk_font_cyrillic_glyph_ranges*(): ptr NkRune {.importc: "nk_font_cyrillic_glyph_ranges".}
-proc nk_font_korean_glyph_ranges*()  : ptr NkRune {.importc: "nk_font_korean_glyph_ranges"  .}
+proc nk_font_korean_glyph_ranges*(): ptr NkRune   {.importc: "nk_font_korean_glyph_ranges"  .}
 
 proc nk_font_config*(px_h: float32): NkFontConfig                      {.importc: "nk_font_config"    .}
 proc nk_font_find_glyph*(font: ptr NkFont; c: NkRune): ptr NkFontGlyph {.importc: "nk_font_find_glyph".}

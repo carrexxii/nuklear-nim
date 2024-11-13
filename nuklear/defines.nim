@@ -21,8 +21,9 @@ const
     NkDefaultCommandBufferSize* {.intdefine.} = 4 * 1024
     NkBufferDefaultInitialSize* {.intdefine.} = 4 * 1024
 
-when defined NkIncludeDefaultAllocator: {.passC: "-DNK_INCLUDE_DEFAULT_ALLOCATOR".}
-when defined NkIncludeDefaultFont     : {.passC: "-DNK_INCLUDE_DEFAULT_FONT"     .}
-when defined NkIncludeFontBaking      : {.passC: "-DNK_INCLUDE_FONT_BAKING"      .}
+when defined NkIncludeDefaultAllocator  : {.passC: "-DNK_INCLUDE_DEFAULT_ALLOCATOR"   .}
+when defined NkIncludeDefaultFont       : {.passC: "-DNK_INCLUDE_DEFAULT_FONT"        .}
+when defined NkIncludeFontBaking        : {.passC: "-DNK_INCLUDE_FONT_BAKING"         .}
+when defined NkIncludeVertexBufferOutput: {.passC: "-DNK_INCLUDE_VERTEX_BUFFER_OUTPUT".}
 
 {.passC: &"""-DNK_MAX_LAYOUT_ROW_TEMPLATE_COLUMNS={NkMaxLayoutRowTemplateColumns}""".}

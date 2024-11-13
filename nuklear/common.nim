@@ -179,7 +179,8 @@ proc nim_alloc*(handle: NkHandle; old: pointer; sz: uint): pointer {.cdecl.} =
     old.realloc sz
 
 proc nim_free*(handle: NkHandle; old: pointer) {.cdecl.} =
-    dealloc old
+    if old != nil:
+        dealloc old
 
 const NimAllocator* = NkAllocator(
     user_data: nil,
