@@ -7,163 +7,159 @@ const
     NkPi*                = 3.141592654'f32
     NkMaxFloatPrecision* = 2'i32
 
-type NkTextEdit = object
+type
+    Heading* {.size: sizeof(Flag).} = enum
+        headingUp
+        headingRight
+        headingDown
+        headingLeft
 
-type NuklearError* = CatchableError
+    ButtonBehaviour* {.size: sizeof(Flag).} = enum
+        btnDefault
+        btnRepeater
+
+    Modify* {.size: sizeof(Flag).} = enum
+        modifyFixed
+        modifyModifiable
+
+    Orientation* {.size: sizeof(Flag).} = enum
+        orientVertical
+        orientHorizontal
+
+    CollapseState* {.size: sizeof(Flag).} = enum
+        collapseMinimized
+        collapseMaximized
+
+    ShowState* {.size: sizeof(Flag).} = enum
+        showHidden
+        showShown
+
+    ChartEvent* {.size: sizeof(Flag).} = enum
+        chartHovering = 0x01
+        chartClicked  = 0x02
+
+    ColourFormat* {.size: sizeof(Flag).} = enum
+        colourRgb
+        colourRgba
+
+    PopupKind* {.size: sizeof(Flag).} = enum
+        popupStatic
+        popupDynamic
+
+    LayoutFormat* {.size: sizeof(Flag).} = enum
+        layoutDynamic
+        layoutStatic
+
+    SymbolKind* {.size: sizeof(Flag).} = enum
+        symNone
+        symX
+        symUnderscore
+        symCircleSolid
+        symCircleOutline
+        symRectSolid
+        symRectOutline
+        symTriUp
+        symTriDown
+        symTriLeft
+        symTriRight
+        symPlus
+        symMinus
+        symTriUpOutline
+        symTriDownOutline
+        symTriLeftOutline
+        symTriRightOutline
+
+    AllocationKind* {.size: sizeof(Flag).} = enum
+        allocFixed
+        allocDynamic
+
+    BufferAllocationKind* {.size: sizeof(Flag).} = enum
+        bufAllocFront
+        bufAllocBack
 
 type
-    NkHeadingKind* = enum
-        nkUp
-        nkRight
-        nkDown
-        nkLeft
+    Hash* = distinct uint32
+    Flag* = distinct uint32
+    Rune* = distinct uint32
 
-    NkButtonBehaviour* = enum
-        nkButtonDefault
-        nkButtonRepeater
-
-    NkModifyKind* = enum
-        nkFixed
-        nkModifiable
-
-    NkOrientation* = enum
-        nkVertical
-        nkHorizontal
-
-    NkCollapseState* = enum
-        nkMinimized
-        nkMaximized
-
-    NkShowState* = enum
-        nkHidden
-        nkShown
-
-    NkChartEvent* = enum
-        nkChartHovering = 0x01
-        nkChartClicked  = 0x02
-
-    NkColourFormat* = enum
-        nkRgb
-        nkRgba
-
-    NkPopupKind* = enum
-        nkPopupStatic
-        nkPopupDynamic
-
-    NkLayoutFormat* = enum
-        nkDynamic
-        nkStatic
-
-    NkSymbolKind* = enum
-        nkSymNone
-        nkSymX
-        nkSymUnderscore
-        nkSymCircleSolid
-        nkSymCircleOutline
-        nkSymRectSolid
-        nkSymRectOutline
-        nkSymTriangleUp
-        nkSymTriangleDown
-        nkSymTriangleLeft
-        nkSymTriangleRight
-        nkSymPlus
-        nkSymMinus
-        nkSymTriangleUpOutline
-        nkSymTriangleDownOutline
-        nkSymTriangleLeftOutline
-        nkSymTriangleRightOutline
-
-    NkAllocationKind* {.size: sizeof(cint).} = enum
-        nkBufFixed
-        nkBufDynamic
-
-    NkBufferAllocationKind* {.size: sizeof(cint).} = enum
-        nkBufFront
-        nkBufBack
-
-type
-    NkHash* = uint32
-    NkFlag* = uint32
-    NkRune* = uint32
-
-    NkColour* = object
+    Colour* = object
         r*, g*, b*, a*: uint8
 
-    NkColourF* = object
+    ColourF* = object
         r*, g*, b*, a*: float32
 
-    NkVec2I* = object
+    Vec2I* = object
         x*, y*: int16
 
-    NkVec2* = object
+    Vec2* = object
         x*, y*: float32
 
-    NkRectI* = object
+    RectI* = object
         x*, y*, w*, h*: int16
 
-    NkRect* = object
+    Rect* = object
         x*, y*, w*, h*: float32
 
-    NkGlyph* = array[NkUtfSize, char]
+    Glyph* = array[NkUtfSize, char]
 
-    NkHandle* {.union.} = object
+    Handle* {.union.} = object
         p* : pointer
         id*: int32
 
-    NkImage* = object
-        handle*: NkHandle
+    Image* = object
+        handle*: Handle
         w*, h* : uint16
         region*: array[4, uint16]
 
-    NkNineSlice* = object
-        img*  : NkImage
+    NineSlice* = object
+        img*  : Image
         l*, t*: uint16
         r*, b*: uint16
 
-    NkCursor* = object
-        img*   : NkImage
-        sz*    : NkVec2
-        offset*: NkVec2
+    Cursor* = object
+        img*   : Image
+        sz*    : Vec2
+        offset*: Vec2
 
-    NkScroll* = object
+    Scroll* = object
         x*, y*: uint32
 
-    NkString* = object
-        buf*: NkBuffer
+    String* = object
+        buf*: Buffer
         len*: int32
 
-    NkPluginAlloc*  = proc(handle: NkHandle; old: pointer; sz: uint): pointer {.cdecl.}
-    NkPluginFree*   = proc(handle: NkHandle; old: pointer)                    {.cdecl.}
-    NkPluginFilter* = proc(te: ptr NkTextEdit; unicode: NkRune): bool         {.cdecl.}
-    NkPluginPaste*  = proc(handle: NkHandle; te: ptr NkTextEdit)              {.cdecl.}
-    NkPluginCopy*   = proc(handle: NkHandle; str: cstring; len: int32)        {.cdecl.}
+    PluginAlloc*  = proc(handle: Handle; old: pointer; sz: uint): pointer {.cdecl.}
+    PluginFree*   = proc(handle: Handle; old: pointer) {.cdecl.}
+    PluginFilter* = proc(text_edit: pointer; unicode: Rune): bool {.cdecl.}
+    PluginPaste*  = proc(handle: Handle; text_edit: pointer) {.cdecl.}
+    PluginCopy*   = proc(handle: Handle; str: cstring; len: int32) {.cdecl.}
 
-    NkMemoryStatus* = object
+    MemoryStatus* = object
         mem*    : pointer
-        kind*   : uint32
+        kind*   : cuint
         sz*     : uint
         alloced*: uint
         needed* : uint
         calls*  : uint
 
-    NkBufferMarker* = object
+    BufferMarker* = object
         active*: bool
         offset*: uint
 
-    NkMemory* = object
+    Memory* = object
         mem*: pointer
         sz* : uint
 
-    NkAllocator* = object
-        user_data*: NkHandle
-        alloc*    : NkPluginAlloc
-        free*     : NkPluginFree
+    Allocator* = object
+        user_data*: Handle
+        alloc*    : PluginAlloc
+        free*     : PluginFree
 
-    NkBuffer* = object
-        markers*    : array[1 + int NkBufferAllocationKind.high, NkBufferMarker]
-        pool*       : NkAllocator
-        kind*       : NkAllocationKind
-        mem*        : NkMemory
+    Buffer* = object
+        markers*    : array[1 + int BufferAllocationKind.high, BufferMarker]
+        pool*       : Allocator
+        kind*       : AllocationKind
+        mem*        : Memory
         grow_factor*: float32
         alloced*    : uint
         needed*     : uint
@@ -172,37 +168,36 @@ type
 
 #[ -------------------------------------------------------------------- ]#
 
-converter `pointer -> NkHandle`*(p: pointer): NkHandle =
-    result.p = p
+converter `pointer -> Handle`*(p: pointer): Handle = result.p = p
 
-proc nim_alloc*(handle: NkHandle; old: pointer; sz: uint): pointer {.cdecl.} =
+proc nim_alloc*(_: Handle; old: pointer; sz: uint): pointer {.cdecl.} =
     old.realloc sz
 
-proc nim_free*(handle: NkHandle; old: pointer) {.cdecl.} =
+proc nim_free*(_: Handle; old: pointer) {.cdecl.} =
     if old != nil:
         dealloc old
 
-const NimAllocator* = NkAllocator(
+const NimAllocator* = Allocator(
     user_data: nil,
     alloc    : nim_alloc,
     free     : nim_free,
 )
 
-using buf: ptr NkBuffer
+using buf: ptr Buffer
 
 when defined NkIncludeDefaultAllocator:
     proc nk_buffer_init_default*(buf) {.importc: "nk_buffer_init_default".}
-proc nk_buffer_init*(buf; allocator: ptr NkAllocator; sz: uint)                        {.importc: "nk_buffer_init"        .}
-proc nk_buffer_init_fixed*(buf; mem: pointer; sz: uint)                                {.importc: "nk_buffer_init_fixed"  .}
-proc nk_buffer_info*(status: ptr NkMemoryStatus; buf)                                  {.importc: "nk_buffer_info"        .}
-proc nk_buffer_push*(buf; kind: NkBufferAllocationKind; mem: pointer; sz, align: uint) {.importc: "nk_buffer_push"        .}
-proc nk_buffer_mark*(buf; kind: NkBufferAllocationKind)                                {.importc: "nk_buffer_mark"        .}
-proc nk_buffer_reset*(buf; kind: NkBufferAllocationKind)                               {.importc: "nk_buffer_reset"       .}
-proc nk_buffer_clear*(buf)                                                             {.importc: "nk_buffer_clear"       .}
-proc nk_buffer_free*(buf)                                                              {.importc: "nk_buffer_free"        .}
-proc nk_buffer_memory*(buf): pointer                                                   {.importc: "nk_buffer_memory"      .}
-proc nk_buffer_memory_const*(buf): pointer                                             {.importc: "nk_buffer_memory_const".}
-proc nk_buffer_total*(buf): uint                                                       {.importc: "nk_buffer_total"       .}
+proc nk_buffer_init*(buf; allocator: ptr Allocator; sz: uint)                        {.importc: "nk_buffer_init"        .}
+proc nk_buffer_init_fixed*(buf; mem: pointer; sz: uint)                              {.importc: "nk_buffer_init_fixed"  .}
+proc nk_buffer_info*(status: ptr MemoryStatus; buf)                                  {.importc: "nk_buffer_info"        .}
+proc nk_buffer_push*(buf; kind: BufferAllocationKind; mem: pointer; sz, align: uint) {.importc: "nk_buffer_push"        .}
+proc nk_buffer_mark*(buf; kind: BufferAllocationKind)                                {.importc: "nk_buffer_mark"        .}
+proc nk_buffer_reset*(buf; kind: BufferAllocationKind)                               {.importc: "nk_buffer_reset"       .}
+proc nk_buffer_clear*(buf)                                                           {.importc: "nk_buffer_clear"       .}
+proc nk_buffer_free*(buf)                                                            {.importc: "nk_buffer_free"        .}
+proc nk_buffer_memory*(buf): pointer                                                 {.importc: "nk_buffer_memory"      .}
+proc nk_buffer_memory_const*(buf): pointer                                           {.importc: "nk_buffer_memory_const".}
+proc nk_buffer_total*(buf): uint                                                     {.importc: "nk_buffer_total"       .}
 
 # #define NK_UNUSED(x) ((void)(x))
 # #define NK_SATURATE(x) (NK_MAX(0, NK_MIN(1.0f, x)))

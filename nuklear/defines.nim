@@ -21,9 +21,19 @@ const
     NkDefaultCommandBufferSize* {.intdefine.} = 4 * 1024
     NkBufferDefaultInitialSize* {.intdefine.} = 4 * 1024
 
+    NkChartMaxSlots* {.intdefine.} = 4'i32
+
 when defined NkIncludeDefaultAllocator  : {.passC: "-DNK_INCLUDE_DEFAULT_ALLOCATOR"   .}
 when defined NkIncludeDefaultFont       : {.passC: "-DNK_INCLUDE_DEFAULT_FONT"        .}
 when defined NkIncludeFontBaking        : {.passC: "-DNK_INCLUDE_FONT_BAKING"         .}
 when defined NkIncludeVertexBufferOutput: {.passC: "-DNK_INCLUDE_VERTEX_BUFFER_OUTPUT".}
+when defined NkIncludeCommandUserData   : {.passC: "-DNK_INCLUDE_COMMAND_USER_DATA"   .}
+when defined NkUintDrawIndex            : {.passC: "-DNK_UINT_DRAW_INDEX"             .}
+when defined NkIncludeStandardIo        : {.passC: "-DNK_INCLUDE_STANDARD_IO"         .}
+when defined NkButtonTriggerOnRelease   : {.passC: "-DNK_BUTTON_TRIGGER_ON_RELEASE"   .}
+when defined NkIncludeStandardVarargs   : {.passC: "-DNK_INCLUDE_STANDARD_VARARGS"    .}
 
-{.passC: &"""-DNK_MAX_LAYOUT_ROW_TEMPLATE_COLUMNS={NkMaxLayoutRowTemplateColumns}""".}
+{.passC: &"""
+    -DNK_INCLUDE_STANDARD_BOOL
+    -DNK_MAX_LAYOUT_ROW_TEMPLATE_COLUMNS={NkMaxLayoutRowTemplateColumns}
+""".}

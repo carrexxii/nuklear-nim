@@ -2,438 +2,436 @@ import common, font, text, drawing
 
 const NkWidgetDisableFactor* = 0.5'f32
 
-{.push size: sizeof(NkFlag).}
 type
-    NkStyleColours* = enum
-        nkColourText
-        nkColourWindow
-        nkColourHeader
-        nkColourBorder
-        nkColourButton
-        nkColourButtonHover
-        nkColourButtonActive
-        nkColourToggle
-        nkColourToggleHover
-        nkColourToggleCursor
-        nkColourSelect
-        nkColourSelectActive
-        nkColourSlider
-        nkColourSliderCursor
-        nkColourSliderCursorHover
-        nkColourSliderCursorActive
-        nkColourProperty
-        nkColourEdit
-        nkColourEditCursor
-        nkColourCombo
-        nkColourChart
-        nkColourChartColour
-        nkColourChartColourHighlight
-        nkColourScrollbar
-        nkColourScrollbarCursor
-        nkColourScrollbarCursorHover
-        nkColourScrollbarCursorActive
-        nkColourTabHeader
+    StyleColours* {.size: sizeof(Flag).} = enum
+        styleColourText
+        styleColourWin
+        styleColourHeader
+        styleColourBorder
+        styleColourBtn
+        styleColourBtnHover
+        styleColourBtnActive
+        styleColourToggle
+        styleColourToggleHover
+        styleColourToggleCursor
+        styleColourSelect
+        styleColourSelectActive
+        styleColourSlider
+        styleColourSliderCursor
+        styleColourSliderCursorHover
+        styleColourSliderCursorActive
+        styleColourProp
+        styleColourEdit
+        styleColourEditCursor
+        styleColourCombo
+        styleColourChart
+        styleColourChartColour
+        styleColourChartColourHighlight
+        styleColourScrollbar
+        styleColourScrollbarCursor
+        styleColourScrollbarCursorHover
+        styleColourScrollbarCursorActive
+        styleColourTabHeader
 
-    NkStyleCursor* = enum
-        nkCursorArrow
-        nkCursorText
-        nkCursorMove
-        nkCursorResizeVertical
-        nkCursorResizeHorizontal
-        nkCursorResizeTopLeftDownRight
-        nkCursorResizeTopRightDownLeft
+    StyleCursor* {.size: sizeof(Flag).} = enum
+        styleCursorArrow
+        styleCursorText
+        styleCursorMove
+        styleCursorResizeVertical
+        styleCursorResizeHorizontal
+        styleCursorResizeTopLeftDownRight
+        styleCursorResizeTopRightDownLeft
 
-    NkStyleItemKind* = enum
-        nkItemColour
-        nkItemImage
-        nkItemNineSlice
+    StyleItemKind* {.size: sizeof(Flag).} = enum
+        styleItemColour
+        styleItemImage
+        styleItemNineSlice
 
-    NkStyleHeaderAlign* = enum
-        nkHeaderLeft
-        nkHeaderRight
-{.pop.} # size: sizeof(NkFlag)
+    StyleHeaderAlign* {.size: sizeof(Flag).} = enum
+        styleHeaderLeft
+        styleHeaderRight
 
 type
-    NkStyle* = object
-        font*          : NkUserFont
-        cursors*       : array[1 + int NkStyleCursor.high, ptr NkCursor]
-        cursor_active* : ptr NkCursor
-        cursor_last*   : ptr NkCursor
-        cursor_visible*: int32
+    Style* = object
+        font*          : UserFont
+        cursors*       : array[1 + int StyleCursor.high, ptr Cursor]
+        cursor_active* : ptr Cursor
+        cursor_last*   : ptr Cursor
+        cursor_visible*: cint
 
-        text*          : NkStyleText
-        btn*           : NkStyleButton
-        contextual_btn*: NkStyleButton
-        menu_btn*      : NkStyleButton
-        option*        : NkStyleToggle
-        checkbox*      : NkStyleToggle
-        seleectable*   : NkStyleSelectable
-        slider*        : NkStyleSlider
-        progress*      : NkStyleProgress
-        property*      : NkStyleProperty
-        edit*          : NkStyleEdit
-        chart*         : NkStyleChart
-        scroll_h*      : NkStyleScrollbar
-        scroll_v*      : NkStyleScrollbar
-        tab*           : NkStyleTab
-        combo*         : NkStyleCombo
-        window*        : NkStyleWindow
+        text*          : StyleText
+        btn*           : StyleButton
+        contextual_btn*: StyleButton
+        menu_btn*      : StyleButton
+        option*        : StyleToggle
+        checkbox*      : StyleToggle
+        seleectable*   : StyleSelectable
+        slider*        : StyleSlider
+        progress*      : StyleProgress
+        property*      : StyleProperty
+        edit*          : StyleEdit
+        chart*         : StyleChart
+        scroll_h*      : StyleScrollbar
+        scroll_v*      : StyleScrollbar
+        tab*           : StyleTab
+        combo*         : StyleCombo
+        window*        : StyleWindow
 
-    NkStyleItemData* {.union.} = object
-        colour*: NkColour
-        img*   : NkImage
-        slice* : NkNineSlice
+    StyleItemData* {.union.} = object
+        colour*: Colour
+        img*   : Image
+        slice* : NineSlice
 
-    NkStyleItem* = object
-        kind*: NkStyleItemKind
-        data*: NkStyleItemData
+    StyleItem* = object
+        kind*: StyleItemKind
+        data*: StyleItemData
 
-    NkStyleText* = object
-        colour*         : NkColour
-        padding*        : NkVec2
-        colour_factor*  : float32
-        disabled_factor*: float32
+    StyleText* = object
+        colour*         : Colour
+        padding*        : Vec2
+        colour_factor*  : cfloat
+        disabled_factor*: cfloat
 
-    NkStyleButton* = object
-        normal*          : NkStyleItem
-        hover*           : NkStyleItem
-        active*          : NkStyleItem
-        border_colour*   : NkColour
-        colour_factor_bg*: float32
+    StyleButton* = object
+        normal*          : StyleItem
+        hover*           : StyleItem
+        active*          : StyleItem
+        border_colour*   : Colour
+        colour_factor_bg*: cfloat
 
-        text_bg*           : NkColour
-        text_normal*       : NkColour
-        text_hover*        : NkColour
-        text_active*       : NkColour
-        text_align*        : NkTextAlignment
-        colour_factor_text*: float32
+        text_bg*           : Colour
+        text_normal*       : Colour
+        text_hover*        : Colour
+        text_active*       : Colour
+        text_align*        : TextAlignment
+        colour_factor_text*: cfloat
 
-        border*         : float32
-        rounding*       : float32
-        padding*        : NkVec2
-        img_padding*    : NkVec2
-        touch_padding*  : NkVec2
-        disabled_factor*: float32
+        border*         : cfloat
+        rounding*       : cfloat
+        padding*        : Vec2
+        img_padding*    : Vec2
+        touch_padding*  : Vec2
+        disabled_factor*: cfloat
 
-        user_data* : NkHandle
-        draw_begin*: proc(buf: ptr NkCommandBuffer; user_data: NkHandle)
-        draw_end*  : proc(buf: ptr NkCommandBuffer; user_data: NkHandle)
+        user_data* : Handle
+        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle)
+        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle)
 
-    NkStyleToggle* = object
-        normal*       : NkStyleItem
-        hover*        : NkStyleItem
-        active*       : NkStyleItem
-        border_colour*: NkColour
+    StyleToggle* = object
+        normal*       : StyleItem
+        hover*        : StyleItem
+        active*       : StyleItem
+        border_colour*: Colour
 
-        cursor_normal*: NkStyleItem
-        cursor_hover* : NkStyleItem
+        cursor_normal*: StyleItem
+        cursor_hover* : StyleItem
 
-        text_normal*: NkColour
-        text_hover* : NkColour
-        text_active*: NkColour
-        text_bg*    : NkColour
-        text_align* : NkTextAlignment
+        text_normal*: Colour
+        text_hover* : Colour
+        text_active*: Colour
+        text_bg*    : Colour
+        text_align* : TextAlignment
 
-        padding*        : NkVec2
-        touch_padding*  : NkVec2
-        spacing*        : float32
-        border*         : float32
-        colour_factor*  : float32
-        disabled_factor*: float32
+        padding*        : Vec2
+        touch_padding*  : Vec2
+        spacing*        : cfloat
+        border*         : cfloat
+        colour_factor*  : cfloat
+        disabled_factor*: cfloat
 
-        user_data* : NkHandle
-        draw_begin*: proc(buf: ptr NkCommandBuffer; user_data: NkHandle)
-        draw_end*  : proc(buf: ptr NkCommandBuffer; user_data: NkHandle)
+        user_data* : Handle
+        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle)
+        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle)
 
-    NkStyleSelectable* = object
-        normal* : NkStyleItem
-        hover*  : NkStyleItem
-        pressed*: NkStyleItem
+    StyleSelectable* = object
+        normal* : StyleItem
+        hover*  : StyleItem
+        pressed*: StyleItem
 
-        normal_active* : NkStyleItem
-        hover_active*  : NkStyleItem
-        pressed_active*: NkStyleItem
+        normal_active* : StyleItem
+        hover_active*  : StyleItem
+        pressed_active*: StyleItem
 
-        text_normal* : NkColour
-        text_hover*  : NkColour
-        text_pressed*: NkColour
+        text_normal* : Colour
+        text_hover*  : Colour
+        text_pressed*: Colour
 
-        text_normal_active* : NkColour
-        text_hover_active*  : NkColour
-        text_pressed_active*: NkColour
+        text_normal_active* : Colour
+        text_hover_active*  : Colour
+        text_pressed_active*: Colour
 
-        text_bg*   : NkColour
-        text_align*: NkTextAlignment
+        text_bg*   : Colour
+        text_align*: TextAlignment
 
-        rounding*       : float32
-        padding*        : NkVec2
-        touch_padding*  : NkVec2
-        img_padding*    : NkVec2
-        colour_factor*  : float32
-        disabled_factor*: float32
+        rounding*       : cfloat
+        padding*        : Vec2
+        touch_padding*  : Vec2
+        img_padding*    : Vec2
+        colour_factor*  : cfloat
+        disabled_factor*: cfloat
 
-        user_data* : NkHandle
-        draw_begin*: proc(buf: ptr NkCommandBuffer; user_data: NkHandle)
-        draw_end*  : proc(buf: ptr NkCommandBuffer; user_data: NkHandle)
+        user_data* : Handle
+        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle)
+        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle)
 
-    NkStyleSlider* = object
-        normal*       : NkStyleItem
-        hover*        : NkStyleItem
-        active*       : NkStyleItem
-        border_colour*: NkColour
+    StyleSlider* = object
+        normal*       : StyleItem
+        hover*        : StyleItem
+        active*       : StyleItem
+        border_colour*: Colour
 
-        bar_normal*: NkColour
-        bar_hover* : NkColour
-        bar_active*: NkColour
-        bar_filled*: NkColour
+        bar_normal*: Colour
+        bar_hover* : Colour
+        bar_active*: Colour
+        bar_filled*: Colour
 
-        cursor_normal*: NkStyleItem
-        cursor_hover* : NkStyleItem
-        cursor_active*: NkStyleItem
+        cursor_normal*: StyleItem
+        cursor_hover* : StyleItem
+        cursor_active*: StyleItem
 
-        border*         : float32
-        rounding*       : float32
-        bar_height*     : float32
-        padding*        : NkVec2
-        spacing*        : NkVec2
-        cursor_sz*      : NkVec2
-        colour_factor*  : float32
-        disabled_factor*: float32
+        border*         : cfloat
+        rounding*       : cfloat
+        bar_height*     : cfloat
+        padding*        : Vec2
+        spacing*        : Vec2
+        cursor_sz*      : Vec2
+        colour_factor*  : cfloat
+        disabled_factor*: cfloat
 
-        show_btns*: int32
-        inc_btn*  : NkStyleButton
-        dec_btn*  : NkStyleButton
-        inc_sym*  : NkSymbolKind
-        dec_sym*  : NkSymbolKind
+        show_btns*: cint
+        inc_btn*  : StyleButton
+        dec_btn*  : StyleButton
+        inc_sym*  : SymbolKind
+        dec_sym*  : SymbolKind
 
-        user_data* : NkHandle
-        draw_begin*: proc(buf: ptr NkCommandBuffer; user_data: NkHandle)
-        draw_end*  : proc(buf: ptr NkCommandBuffer; user_data: NkHandle)
+        user_data* : Handle
+        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle)
+        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle)
 
-    NkStyleProgress* = object
-        normal*       : NkStyleItem
-        hover*        : NkStyleItem
-        active*       : NkStyleItem
-        border_colour*: NkColour
+    StyleProgress* = object
+        normal*       : StyleItem
+        hover*        : StyleItem
+        active*       : StyleItem
+        border_colour*: Colour
 
-        cursor_normal*       : NkStyleItem
-        cursor_hover*        : NkStyleItem
-        cursor_active*       : NkStyleItem
-        cursor_border_colour*: NkColour
+        cursor_normal*       : StyleItem
+        cursor_hover*        : StyleItem
+        cursor_active*       : StyleItem
+        cursor_border_colour*: Colour
 
-        rounding*       : float32
-        border*         : float32
-        cursor_border*  : float32
-        cursor_rounding*: float32
-        padding*        : NkVec2
-        colour_factor*  : float32
-        disabled_factor*: float32
+        rounding*       : cfloat
+        border*         : cfloat
+        cursor_border*  : cfloat
+        cursor_rounding*: cfloat
+        padding*        : Vec2
+        colour_factor*  : cfloat
+        disabled_factor*: cfloat
 
-        user_data* : NkHandle
-        draw_begin*: proc(buf: ptr NkCommandBuffer; user_data: NkHandle)
-        draw_end*  : proc(buf: ptr NkCommandBuffer; user_data: NkHandle)
+        user_data* : Handle
+        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle)
+        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle)
 
-    NkStyleScrollbar* = object
-        normal*       : NkStyleItem
-        hover*        : NkStyleItem
-        active*       : NkStyleItem
-        border_colour*: NkColour
+    StyleScrollbar* = object
+        normal*       : StyleItem
+        hover*        : StyleItem
+        active*       : StyleItem
+        border_colour*: Colour
 
-        cursor_normal*       : NkStyleItem
-        cursor_hover*        : NkStyleItem
-        cursor_active*       : NkStyleItem
-        cursor_border_colour*: NkColour
+        cursor_normal*       : StyleItem
+        cursor_hover*        : StyleItem
+        cursor_active*       : StyleItem
+        cursor_border_colour*: Colour
 
-        border*         : float32
-        rounding*       : float32
-        cursor_border*  : float32
-        cursor_rounding*: float32
-        padding*        : NkVec2
-        colour_factor*  : float32
-        disabled_factor*: float32
+        border*         : cfloat
+        rounding*       : cfloat
+        cursor_border*  : cfloat
+        cursor_rounding*: cfloat
+        padding*        : Vec2
+        colour_factor*  : cfloat
+        disabled_factor*: cfloat
 
-        show_btns*: int32
-        inc_btn*  : NkStyleButton
-        dec_btn*  : NkStyleButton
-        inc_sym*  : NkSymbolKind
-        dec_sym*  : NkSymbolKind
+        show_btns*: cint
+        inc_btn*  : StyleButton
+        dec_btn*  : StyleButton
+        inc_sym*  : SymbolKind
+        dec_sym*  : SymbolKind
 
-        user_data* : NkHandle
-        draw_begin*: proc(buf: ptr NkCommandBuffer; user_data: NkHandle)
-        draw_end*  : proc(buf: ptr NkCommandBuffer; user_data: NkHandle)
+        user_data* : Handle
+        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle)
+        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle)
 
-    NkStyleEdit* = object
-        normal*       : NkStyleItem
-        hover*        : NkStyleItem
-        active*       : NkStyleItem
-        border_colour*: NkColour
-        scrollbar*    : NkStyleScrollbar
+    StyleEdit* = object
+        normal*       : StyleItem
+        hover*        : StyleItem
+        active*       : StyleItem
+        border_colour*: Colour
+        scrollbar*    : StyleScrollbar
 
-        cursor_normal*     : NkColour
-        cursor_hover*      : NkColour
-        cursor_text_normal*: NkColour
-        cursor_text_hover* : NkColour
+        cursor_normal*     : Colour
+        cursor_hover*      : Colour
+        cursor_text_normal*: Colour
+        cursor_text_hover* : Colour
 
-        text_normal*: NkColour
-        text_hover* : NkColour
-        text_active*: NkColour
+        text_normal*: Colour
+        text_hover* : Colour
+        text_active*: Colour
 
-        selected_normal*     : NkColour
-        selected_hover*      : NkColour
-        selected_text_normal*: NkColour
-        selected_text_hover* : NkColour
+        selected_normal*     : Colour
+        selected_hover*      : Colour
+        selected_text_normal*: Colour
+        selected_text_hover* : Colour
 
-        border*         : float32
-        rounding*       : float32
-        cursor_sz*      : float32
-        scrollbar_sz*   : NkVec2
-        padding*        : NkVec2
-        row_padding*    : NkVec2
-        colour_factor*  : float32
-        disabled_factor*: float32
+        border*         : cfloat
+        rounding*       : cfloat
+        cursor_sz*      : cfloat
+        scrollbar_sz*   : Vec2
+        padding*        : Vec2
+        row_padding*    : Vec2
+        colour_factor*  : cfloat
+        disabled_factor*: cfloat
 
-    NkStyleProperty* = object
-        normal*       : NkStyleItem
-        hover*        : NkStyleItem
-        active*       : NkStyleItem
-        border_colour*: NkColour
+    StyleProperty* = object
+        normal*       : StyleItem
+        hover*        : StyleItem
+        active*       : StyleItem
+        border_colour*: Colour
 
-        label_normal*: NkColour
-        label_hover* : NkColour
-        label_active*: NkColour
+        label_normal*: Colour
+        label_hover* : Colour
+        label_active*: Colour
 
-        sym_left* : NkSymbolKind
-        sym_right*: NkSymbolKind
+        sym_left* : SymbolKind
+        sym_right*: SymbolKind
 
-        border*         : float32
-        rounding*       : float32
-        padding*        : NkVec2
-        colour_factor*  : float32
-        disabled_factor*: float32
+        border*         : cfloat
+        rounding*       : cfloat
+        padding*        : Vec2
+        colour_factor*  : cfloat
+        disabled_factor*: cfloat
 
-        edit*   : NkStyleEdit
-        inc_btn*: NkStyleButton
-        dec_btn*: NkStyleButton
+        edit*   : StyleEdit
+        inc_btn*: StyleButton
+        dec_btn*: StyleButton
 
-        user_data* : NkHandle
-        draw_begin*: proc(buf: ptr NkCommandBuffer; user_data: NkHandle)
-        draw_end*  : proc(buf: ptr NkCommandBuffer; user_data: NkHandle)
+        user_data* : Handle
+        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle)
+        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle)
 
-    NkStyleChart* = object
-        bg*             : NkStyleItem
-        border_colour*  : NkColour
-        selected_colour*: NkColour
-        colour*         : NkColour
+    StyleChart* = object
+        bg*             : StyleItem
+        border_colour*  : Colour
+        selected_colour*: Colour
+        colour*         : Colour
 
-        border*         : float32
-        rounding*       : float32
-        padding*        : NkVec2
-        colour_factor*  : float32
-        disabled_factor*: float32
+        border*         : cfloat
+        rounding*       : cfloat
+        padding*        : Vec2
+        colour_factor*  : cfloat
+        disabled_factor*: cfloat
         show_markers*   : bool
 
-    NkStyleCombo* = object
-        normal*       : NkStyleItem
-        hover*        : NkStyleItem
-        active*       : NkStyleItem
-        border_colour*: NkColour
+    StyleCombo* = object
+        normal*       : StyleItem
+        hover*        : StyleItem
+        active*       : StyleItem
+        border_colour*: Colour
 
-        label_normal*: NkColour
-        label_hover* : NkColour
-        label_active*: NkColour
+        label_normal*: Colour
+        label_hover* : Colour
+        label_active*: Colour
 
-        sym_colour_normal*: NkColour
-        sym_colour_hover* : NkColour
-        sym_colour_active*: NkColour
+        sym_colour_normal*: Colour
+        sym_colour_hover* : Colour
+        sym_colour_active*: Colour
 
-        btn*       : NkStyleButton
-        sym_normal*: NkSymbolKind
-        sym_hover* : NkSymbolKind
-        sym_active*: NkSymbolKind
+        btn*       : StyleButton
+        sym_normal*: SymbolKind
+        sym_hover* : SymbolKind
+        sym_active*: SymbolKind
 
-        border*         : float32
-        rounding*       : float32
-        content_padding*: NkVec2
-        btn_padding*    : NkVec2
-        spacing*        : NkVec2
-        colour_factor*  : float32
-        disabled_factor*: float32
+        border*         : cfloat
+        rounding*       : cfloat
+        content_padding*: Vec2
+        btn_padding*    : Vec2
+        spacing*        : Vec2
+        colour_factor*  : cfloat
+        disabled_factor*: cfloat
 
-    NkStyleTab* = object
-        bg*           : NkStyleItem
-        border_colour*: NkColour
-        text*         : NkColour
+    StyleTab* = object
+        bg*           : StyleItem
+        border_colour*: Colour
+        text*         : Colour
 
-        tab_maximize_btn* : NkStyleButton
-        tab_minimize_btn* : NkStyleButton
-        node_maximize_btn*: NkStyleButton
-        node_minimize_btn*: NkStyleButton
-        sym_minimize*     : NkSymbolKind
-        sym_maximize*     : NkSymbolKind
+        tab_maximize_btn* : StyleButton
+        tab_minimize_btn* : StyleButton
+        node_maximize_btn*: StyleButton
+        node_minimize_btn*: StyleButton
+        sym_minimize*     : SymbolKind
+        sym_maximize*     : SymbolKind
 
-        border*         : float32
-        rounding*       : float32
-        indent*         : float32
-        padding*        : NkVec2
-        spacing*        : NkVec2
-        colour_factor*  : float32
-        disabled_factor*: float32
+        border*         : cfloat
+        rounding*       : cfloat
+        indent*         : cfloat
+        padding*        : Vec2
+        spacing*        : Vec2
+        colour_factor*  : cfloat
+        disabled_factor*: cfloat
 
-    NkStyleWindowHeader* = object
-        normal*: NkStyleItem
-        hover* : NkStyleItem
-        active*: NkStyleItem
+    StyleWindowHeader* = object
+        normal*: StyleItem
+        hover* : StyleItem
+        active*: StyleItem
 
-        close_btn*   : NkStyleButton
-        minimize_btn*: NkStyleButton
-        close_sym*   : NkSymbolKind
-        minimize_sym*: NkSymbolKind
-        maximize_sym*: NkSymbolKind
+        close_btn*   : StyleButton
+        minimize_btn*: StyleButton
+        close_sym*   : SymbolKind
+        minimize_sym*: SymbolKind
+        maximize_sym*: SymbolKind
 
-        label_normal*: NkColour
-        label_hover* : NkColour
-        label_active*: NkColour
+        label_normal*: Colour
+        label_hover* : Colour
+        label_active*: Colour
 
-        align*        : NkStyleHeaderAlign
-        padding*      : NkVec2
-        label_padding*: NkVec2
-        spacing*      : NkVec2
+        align*        : StyleHeaderAlign
+        padding*      : Vec2
+        label_padding*: Vec2
+        spacing*      : Vec2
 
-    NkStyleWindow* = object
-        header*  : NkStyleWindowHeader
-        fixed_bg*: NkStyleItem
-        bg*      : NkColour
+    StyleWindow* = object
+        header*  : StyleWindowHeader
+        fixed_bg*: StyleItem
+        bg*      : Colour
 
-        border_colour*           : NkColour
-        popup_border_colour*     : NkColour
-        combo_border_colour*     : NkColour
-        contextual_border_colour*: NkColour
-        menu_border_colour*      : NkColour
-        group_border_colour*     : NkColour
-        tooltip_border_colour*   : NkColour
-        scaler*                  : NkStyleItem
+        border_colour*           : Colour
+        popup_border_colour*     : Colour
+        combo_border_colour*     : Colour
+        contextual_border_colour*: Colour
+        menu_border_colour*      : Colour
+        group_border_colour*     : Colour
+        tooltip_border_colour*   : Colour
+        scaler*                  : StyleItem
 
-        border*           : float32
-        combo_border*     : float32
-        contextual_border*: float32
-        menu_border*      : float32
-        group_border*     : float32
-        tooltip_border*   : float32
-        popup_border*     : float32
-        min_row_h_padding*: float32
+        border*           : cfloat
+        combo_border*     : cfloat
+        contextual_border*: cfloat
+        menu_border*      : cfloat
+        group_border*     : cfloat
+        tooltip_border*   : cfloat
+        popup_border*     : cfloat
+        min_row_h_padding*: cfloat
 
-        rounding*    : float32
-        spacing*     : NkVec2
-        scrollbar_sz*: NkVec2
-        min_sz*      : NkVec2
+        rounding*    : cfloat
+        spacing*     : Vec2
+        scrollbar_sz*: Vec2
+        min_sz*      : Vec2
 
-        padding*           : NkVec2
-        group_padding*     : NkVec2
-        popup_padding*     : NkVec2
-        combo_padding*     : NkVec2
-        contextual_padding*: NkVec2
-        menu_padding*      : NkVec2
-        tooltip_padding*   : NkVec2
+        padding*           : Vec2
+        group_padding*     : Vec2
+        popup_padding*     : Vec2
+        combo_padding*     : Vec2
+        contextual_padding*: Vec2
+        menu_padding*      : Vec2
+        tooltip_padding*   : Vec2
 
 # NK_API void nk_style_default(struct nk_context*);
 # NK_API void nk_style_from_table(struct nk_context*, const struct nk_color*);

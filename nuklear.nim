@@ -7,5 +7,4 @@ import nuklear/[drawing, font, input, layout, properties, style, text, tree, wid
 export          drawing, font, input, layout, properties, style, text, tree, widget, window, stack, context, common
 
 when defined NkIncludeCommandUserData:
-    {.passC: "-DNK_INCLUDE_COMMAND_USER_DATA".}
-    proc nk_set_user_data*(ctx: ptr NkContext; handle: NkHandle) {.importc: "nk_set_user_data".}
+    proc nk_set_user_data*(ctx: ptr Context; handle: Handle) {.importc: "nk_set_user_data".}

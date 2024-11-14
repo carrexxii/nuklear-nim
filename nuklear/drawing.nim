@@ -1,46 +1,43 @@
-import common
+import bitgen, common
+from font import UserFont
 
-{.push size: sizeof(cint).}
+type ConvertResult* = distinct uint32
+ConvertResult.gen_bit_ops convertInvalidParam, convertCmdBufFull, convertVtxBufFull, convertElemBufFull
+const convertSuccess* = ConvertResult 0
+
 type
-    NkAntiAliasing* = enum
-        nkAntiAliasingOff
-        nkAntiAliasingOn
+    AntiAliasing* {.size: sizeof(Flag).} = enum
+        aaOff
+        aaOn
 
-    NkConvertResult* = enum
-        nkConvertSuccess           = 0
-        nkConvertInvalidParam      = 1
-        nkConvertCommandBufferFull = 1 shl 1
-        nkConvertVertexBufferFull  = 1 shl 2
-        nkConvertElementBufferFull = 1 shl 3
+    DrawVertexLayoutAttribute* {.size: sizeof(Flag).} = enum
+        vtxPosition
+        vtxColour
+        vtxTexcoord
 
-    NkDrawVertexLayoutAttribute* = enum
-        nkVertPosition
-        nkVertColour
-        nkVertTexcoord
+    DrawVertexLayoutFormat* {.size: sizeof(Flag).} = enum
+        fmtSchar
+        fmtSshort
+        fmtSint
+        fmtUchar
+        fmtUshort
+        fmtUint
+        fmtFloat
+        fmtDouble
 
-    NkDrawVertexLayoutFormat* = enum
-        nkFmtSchar
-        nkFmtSshort
-        nkFmtSint
-        nkFmtUchar
-        nkFmtUshort
-        nkFmtUint
-        nkFmtFloat
-        nkFmtDouble
+        fmtR8G8B8
+        fmtR16G15B16
+        fmtR32G32B32
+        fmtR8G8B8A8
+        fmtB8G8R8A8
+        fmtR16G15B16A16
+        fmtR32G32B32A32
+        fmtR32G32B32A32Float
+        fmtR32G32B32A32Double
+        fmtRgb32
+        fmtRgba32
 
-        nkFmtR8G8B8
-        nkFmtR16G15B16
-        nkFmtR32G32B32
-        nkFmtR8G8B8A8
-        nkFmtB8G8R8A8
-        nkFmtR16G15B16A16
-        nkFmtR32G32B32A32
-        nkFmtR32G32B32A32Float
-        nkFmtR32G32B32A32Double
-        nkFmtRgb32
-        nkFmtRgba32
-
-    CommandKind* = enum
+    CommandKind* {.size: sizeof(Flag).} = enum
         cmdNop
         cmdScissor
         cmdLine
@@ -61,77 +58,79 @@ type
         cmdImage
         cmdCustom
 
-    CommandClipping* = enum
+    CommandClipping* {.size: sizeof(Flag).} = enum
         clippingOff = false
         clippingOn  = true
 
-    DrawListStroke* = enum
+    DrawListStroke* {.size: sizeof(Flag).} = enum
         strokeOpen   = false
         strokeClosed = true
-{.pop.} # size: sizeof(cint)
 
-const nkFmtColourStart* = nkFmtR8G8B8
-const nkFmtColourEnd*   = nkFmtRgba32
+const FmtColourStart* = fmtR8G8B8
+const FmtColourEnd*   = fmtRgba32
+
+when defined NkUintDrawIndex:
+    type DrawIndex* = cuint
+else:
+    type DrawIndex* = cushort
 
 type
     CommandCustomCallback* = proc(canvas: pointer; x, y: cshort; w, h: cushort; cb_data: Handle) {.cdecl.}
 
-    DrawIndex* = when defined NkUintDrawIndex: cuint else: cushort
+    DrawNullTexture* = object
+        tex*: Handle
+        uv* : Vec2
 
-    NkDrawNullTexture* = object
-        tex*: NkHandle
-        uv* : NkVec2
+    ConvertConfig* = object
+        global_alpha*    : cfloat
+        line_aa*         : AntiAliasing
+        shape_aa*        : AntiAliasing
+        circle_seg_count*: cuint
+        arc_seg_count*   : cuint
+        curve_seg_count* : cuint
+        tex_null*        : DrawNullTexture
+        layout_elem*     : DrawVertexLayoutElement
+        vtx_sz*          : uint
+        vtx_align*       : uint
 
-    NkConvertConfig* = object
-        global_alpha*    : float32
-        line_aa*         : NkAntiAliasing
-        shape_aa*        : NkAntiAliasing
-        circle_seg_count*: uint32
-        arc_seg_count*   : uint32
-        curve_seg_count* : uint32
-        tex_null*        : NkDrawNullTexture
-        layout_elem*     : NkDrawVertexLayoutElement
-        vert_sz*         : uint
-        vert_align*      : uint
-
-    NkDrawVertexLayoutElement* = object
-        attr*  : NkDrawVertexLayoutAttribute
-        fmt*   : NkDrawVertexLayoutFormat
+    DrawVertexLayoutElement* = object
+        attr*  : DrawVertexLayoutAttribute
+        fmt*   : DrawVertexLayoutFormat
         offset*: uint
 
-    NkCommandBuffer* = object
-        base*: ptr NkBuffer
-        clip*: NkRect
-        use_clipping*: int32
-        user_data*   : NkHandle
-        begin*: uint
-        `end`*: uint
-        last* : uint
+    CommandBuffer* = object
+        base*        : ptr Buffer
+        clip*        : Rect
+        use_clipping*: cint
+        user_data*   : Handle
+        begin*       : uint
+        `end`*       : uint
+        last*        : uint
 
-    NkDrawCommand* = object
+    DrawCommand* = object
         elem_count*: cuint
-        clip_rect* : NkRect
-        tex*       : NkHandle
+        clip_rect* : Rect
+        tex*       : Handle
         when defined NkIncludeCommandUserData:
-            user_data*: NkHandle
+            user_data*: Handle
 
-    NkDrawList* = object
-        clip_rect*  : NkRect
-        circle_vtx* : array[12, NkVec2]
-        cfg*        : NkConvertConfig
-        buf*        : NkBuffer
-        vertices*   : NkBuffer
-        elems*      : NkBuffer
+    DrawList* = object
+        clip_rect*  : Rect
+        circle_vtx* : array[12, Vec2]
+        cfg*        : ConvertConfig
+        buf*        : Buffer
+        vertices*   : Buffer
+        elems*      : Buffer
         elem_count* : cuint
         vtx_count*  : cuint
         cmd_count*  : cuint
         cmd_offset* : uint
         path_count* : cuint
         path_offset*: cuint
-        line_aa*    : NkAntiAliasing
-        shape_aa*   : NkAntiAliasing
+        line_aa*    : AntiAliasing
+        shape_aa*   : AntiAliasing
         when defined NkIncludeCommandUserData:
-            user_data*: NkHandle
+            user_data*: Handle
 
     Command* = object
         kind*: CommandKind
@@ -268,7 +267,7 @@ type
 #[ -------------------------------------------------------------------- ]#
 
 using
-    ctx    : ptr Context
+    ctx    : pointer
     cmd_buf: ptr CommandBuffer
     canvas : ptr DrawList
     colour : Colour
@@ -280,12 +279,10 @@ proc nk_next*(ctx; cmd: ptr Command): ptr Command {.importc: "nk__next" .}
 # TODO
 # #define nk_foreach(c, ctx) for((c) = nk__begin(ctx); (c) != 0; (c) = nk__next(ctx,c))
 when defined NkIncludeVertexBufferOutput:
-    {.passC: "-DNK_INCLUDE_VERTEX_BUFFER_OUTPUT".}
-    proc nk_convert*(ctx; cmds: ptr NkBuffer; verts: ptr NkBuffer; elems: ptr NkBuffer;
-                     cfg: ptr NkConvertConfig): NkFlag                                     {.importc: "nk_convert"    .}
-    proc nk_draw_begin*(ctx; cmds: ptr NkBuffer): ptr NkDrawCommand                        {.importc: "nk__draw_begin".}
-    proc nk_draw_end*(ctx; cmds: ptr NkBuffer): ptr NkDrawCommand                          {.importc: "nk__draw_end"  .}
-    proc nk_draw_next*(cmd: ptr NkDrawCommand; cmds: ptr NkBuffer; ctx): ptr NkDrawCommand {.importc: "nk__draw_next" .}
+    proc nk_convert*(ctx; cmds: ptr Buffer; verts: ptr Buffer; elems: ptr Buffer; cfg: ptr ConvertConfig): Flag {.importc: "nk_convert"    .}
+    proc nk_draw_begin*(ctx; cmds: ptr Buffer): ptr DrawCommand                                                 {.importc: "nk__draw_begin".}
+    proc nk_draw_end*(ctx; cmds: ptr Buffer): ptr DrawCommand                                                   {.importc: "nk__draw_end"  .}
+    proc nk_draw_next*(cmd: ptr DrawCommand; cmds: ptr Buffer; ctx): ptr DrawCommand                            {.importc: "nk__draw_next" .}
     # TODO
     # #define nk_draw_foreach(cmd,ctx, b) for((cmd)=nk__draw_begin(ctx, b); (cmd)!=0; (cmd)=nk__draw_next(cmd, b, ctx))
 
@@ -296,7 +293,7 @@ proc nk_stroke_circle*(cmd_buf; rect; thickness: cfloat; colour)                
 proc nk_stroke_arc*(cmd_buf; cx, cy, r, a_min, a_max, thickness: cfloat; colour)              {.importc: "nk_stroke_arc"     .}
 proc nk_stroke_triangle*(cmd_buf; x0, y0, x1, y1, x2, y2, thickness: cfloat; colour)          {.importc: "nk_stroke_triangle".}
 proc nk_stroke_polyline*(cmd_buf; pts: ptr cfloat; pt_count: cint; thickness: cfloat; colour) {.importc: "nk_stroke_polyline".}
-proc nk_stroke_polygon*(cmd_buf; pts: ptr cfloat; pt_count: cint; thickness; colour)          {.importc: "nk_stroke_polygon" .}
+proc nk_stroke_polygon*(cmd_buf; pts: ptr cfloat; pt_count: cint; thickness: cfloat; colour)  {.importc: "nk_stroke_polygon" .}
 
 proc nk_fill_rect*(cmd_buf; rect; rounding: cfloat; colour)                     {.importc: "nk_fill_rect"            .}
 proc nk_fill_rect_multi_color*(cmd_buf; rect; left, top, right, bottom: Colour) {.importc: "nk_fill_rect_multi_color".}
@@ -316,9 +313,9 @@ proc nk_draw_list_setup*(canvas; cfg: ptr ConvertConfig; cmds, verts, elems: ptr
 
 # TODO
 # #define nk_draw_list_foreach(cmd, can, b) for((cmd)=nk__draw_list_begin(can, b); (cmd)!=0; (cmd)=nk__draw_list_next(cmd, b, can))
-proc nk__draw_list_begin*(canvas; buf: ptr Buffer): ptr DrawCommand                      {.importc: "nk__draw_list_begin".}
-proc nk__draw_list_next*(cmd: ptr DrawCommand; buf: ptr Buffer; canvas): ptr DrawCommand {.importc: "nk__draw_list_next" .}
-proc nk__draw_list_end*(canvas; buf: ptr Buffer): ptr DrawCommand                        {.importc: "nk__draw_list_end"  .}
+proc nk_draw_list_begin*(canvas; buf: ptr Buffer): ptr DrawCommand                      {.importc: "nk__draw_list_begin".}
+proc nk_draw_list_next*(cmd: ptr DrawCommand; buf: ptr Buffer; canvas): ptr DrawCommand {.importc: "nk__draw_list_next" .}
+proc nk_draw_list_end*(canvas; buf: ptr Buffer): ptr DrawCommand                        {.importc: "nk__draw_list_end"  .}
 
 proc nk_draw_list_path_clear*(canvas)                                                          {. importc: "nk_draw_list_path_clear"      .}
 proc nk_draw_list_path_line_to*(canvas; pos: Vec2)                                             {. importc: "nk_draw_list_path_line_to"    .}

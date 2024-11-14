@@ -1,6 +1,10 @@
-# NK_API void nk_property_int(struct nk_context*, const char *name, int min, int *val, int max, int step, float inc_per_pixel);
-# NK_API void nk_property_float(struct nk_context*, const char *name, float min, float *val, float max, float step, float inc_per_pixel);
-# NK_API void nk_property_double(struct nk_context*, const char *name, double min, double *val, double max, double step, float inc_per_pixel);
-# NK_API int nk_propertyi(struct nk_context*, const char *name, int min, int val, int max, int step, float inc_per_pixel);
-# NK_API float nk_propertyf(struct nk_context*, const char *name, float min, float val, float max, float step, float inc_per_pixel);
-# NK_API double nk_propertyd(struct nk_context*, const char *name, double min, double val, double max, double step, float inc_per_pixel);
+using
+    ctx : pointer
+    name: cstring
+
+proc nk_property_int*(ctx; name; min: cint; val: ptr cint; step: cint; inc_per_px: cfloat)                  {. importc: "nk_property_int"   .}
+proc nk_property_float*(ctx; name; min: cfloat; val: ptr cfloat; max, step, inc_per_px: cfloat)             {. importc: "nk_property_float" .}
+proc nk_property_double*(ctx; name; min: cdouble; val: ptr cdouble; max, step: cdouble; inc_per_px: cfloat) {. importc: "nk_property_double".}
+proc nk_propertyi*(ctx; name; min, val, max, step: cint; inc_per_px: cfloat): cint                          {. importc: "nk_propertyi"      .}
+proc nk_propertyf*(ctx; name; min, val, max, step, inc_per_px: cfloat): cfloat                              {. importc: "nk_propertyf"      .}
+proc nk_propertyd*(ctx; name; min, val, max, step: cdouble; inc_per_px: cfloat): cdouble                    {. importc: "nk_propertyd"      .}

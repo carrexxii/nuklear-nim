@@ -15,40 +15,40 @@ import common, style, font
 # NK_CONFIG_STACK(button_behavior, NK_BUTTON_BEHAVIOR_STACK_SIZE);
 
 type
-    NkConfigurationStacks* = object
-        style_items*   : NkConfigStackStyle
-        floats*        : NkConfigStackFloat
-        vectors*       : NkConfigStackVec2
-        flags*         : NkConfigStackFlag
-        colours*       : NkConfigStackColour
-        user_fonts*    : NkConfigStackUserFont
-        btn_behaviours*: NkConfigStackButtonBehaviour
+    ConfigurationStacks* = object
+        style_items*   : ConfigStackStyle
+        floats*        : ConfigStackFloat
+        vectors*       : ConfigStackVec2
+        flags*         : ConfigStackFlag
+        colours*       : ConfigStackColour
+        user_fonts*    : ConfigStackUserFont
+        btn_behaviours*: ConfigStackButtonBehaviour
 
-    NkConfigStackStyle* = object
-        head* : int32
-        elems*: array[NkStyleItemStackSize, tuple[address: ptr NkStyleItem,
-                                                  old_val: NkStyleItem]]
-    NkConfigStackFloat* = object
-        head* : int32
-        elems*: array[NkFloatStackSize, tuple[address: ptr float32,
-                                              old_val: float32]]
-    NkConfigStackVec2* = object
-        head* : int32
-        elems*: array[NkVec2StackSize, tuple[address: ptr NkVec2,
-                                             old_val: NkVec2]]
-    NkConfigStackFlag* = object
-        head* : int32
-        elems*: array[NkFlagStackSize, tuple[address: ptr NkFlag,
-                                             old_val: NkFlag]]
-    NkConfigStackColour* = object
-        head* : int32
-        elems*: array[NkColourStackSize, tuple[address: ptr NkColour,
-                                               old_val: NkColour]]
-    NkConfigStackUserFont* = object
-        head* : int32
-        elems*: array[NkUserFontStackSize, tuple[address: ptr NkUserFont,
-                                                 old_val: NkUserFont]]
-    NkConfigStackButtonBehaviour* = object
-        head* : int32
-        elems*: array[NkButtonBehaviourStackSize, tuple[address: ptr NkButtonBehaviour,
-                                                        old_val: NkButtonBehaviour]]
+    ConfigStackStyle* = object
+        head* : cint
+        elems*: array[NkStyleItemStackSize, tuple[address: ptr StyleItem,
+                                                  old_val: StyleItem]]
+    ConfigStackFloat* = object
+        head* : cint
+        elems*: array[NkFloatStackSize, tuple[address: ptr cfloat,
+                                              old_val: cfloat]]
+    ConfigStackVec2* = object
+        head* : cint
+        elems*: array[NkVec2StackSize, tuple[address: ptr Vec2,
+                                             old_val: Vec2]]
+    ConfigStackFlag* = object
+        head* : cint
+        elems*: array[NkFlagStackSize, tuple[address: ptr Flag,
+                                             old_val: Flag]]
+    ConfigStackColour* = object
+        head* : cint
+        elems*: array[NkColourStackSize, tuple[address: ptr Colour,
+                                               old_val: Colour]]
+    ConfigStackUserFont* = object
+        head* : cint
+        elems*: array[NkUserFontStackSize, tuple[address: ptr UserFont,
+                                                 old_val: UserFont]]
+    ConfigStackButtonBehaviour* = object
+        head* : cint
+        elems*: array[NkButtonBehaviourStackSize, tuple[address: ptr ButtonBehaviour,
+                                                        old_val: ButtonBehaviour]]
