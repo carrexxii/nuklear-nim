@@ -1,46 +1,7 @@
-import bitgen, common, input, text, style
-
-type WidgetState* = distinct uint32
-WidgetState.gen_bit_ops(
-    stateModified, stateInactive, stateEntered, stateHover,
-    stateActivated, stateLeft,
-)
-const stateHovered* = stateHover or stateModified
-const stateActive*  = stateActivated or stateModified
-
-type
-    WidgetLayoutState* {.size: sizeof(Flag).} = enum
-        layoutInvalid
-        layoutValid
-        layoutRom
-        layoutDisabled
-
-    ChartKind* = enum
-        chartLine
-        chartColumn
-
-type
-    ChartSlot* = object
-        kind*        : ChartKind
-        colour*      : Colour
-        highlight*   : Colour
-        min*, max*   : cfloat
-        range*       : cfloat
-        count*       : cint
-        last*        : Vec2
-        index*       : cint
-        show_markers*: bool
-
-    Chart* = object
-        slot* : cint
-        x*, y*: cfloat
-        w*, h*: cfloat
-        slots*: array[NkChartMaxSlots, ChartSlot]
-
-#[ -------------------------------------------------------------------- ]#
+import common
 
 using
-    ctx        : pointer
+    ctx        : ptr Context
     text, label: cstring
     sym        : SymbolKind
     img        : Image
@@ -87,6 +48,16 @@ proc nk_option_label*(ctx; label; active: bool): bool                           
 proc nk_option_label_align*(ctx; label; active: bool; widget_align, text_align: TextAlignment): bool {.importc: "nk_option_label_align".}
 
 proc nk_slider_float*(ctx; min: cfloat; val: ptr cfloat; max, step: cfloat): bool {.importc: "nk_slider_float".}
+
+#[ -------------------------------------------------------------------- ]#
+
+using ctx: Context
+
+proc slider*(ctx; min, max, step: float32): ref float32 =
+    result = new float32
+    if not nk_slider_float(ctx.addr, cfloat min, result[].addr, cfloat max, cfloat step):
+        return nil
+
 # NK_API float nk_slide_float(struct nk_context*, float min, float val, float max, float step);
 # NK_API int nk_slide_int(struct nk_context*, int min, int val, int max, int step);
 # NK_API nk_bool nk_slider_int(struct nk_context*, int min, int *val, int max, int step);

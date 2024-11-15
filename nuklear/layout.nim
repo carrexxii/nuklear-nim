@@ -1,20 +1,6 @@
-import bitgen, common
+import common
 
-type WidgetAlign* = distinct uint32
-WidgetAlign.gen_bit_ops(
-    alignLeft, alignCentred, alignRight, alignTop,
-    alignMiddle, alignBottom,
-)
-
-type
-    WidgetAlignment* {.size: sizeof(Flag).} = enum
-        alignmentLeft    = alignMiddle or alignLeft
-        alignmentCentred = alignMiddle or alignCentred
-        alignmentRight   = alignMiddle or alignRight
-
-#[ -------------------------------------------------------------------- ]#
-
-using ctx: pointer
+using ctx: ptr Context
 
 proc nk_layout_set_min_row_height*(ctx; h: cfloat)          {.importc: "nk_layout_set_min_row_height"  .}
 proc nk_layout_reset_min_row_height*(ctx)                   {.importc: "nk_layout_reset_min_row_height".}

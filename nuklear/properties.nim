@@ -1,5 +1,7 @@
+import common
+
 using
-    ctx : pointer
+    ctx : ptr Context
     name: cstring
 
 proc nk_property_int*(ctx; name; min: cint; val: ptr cint; step: cint; inc_per_px: cfloat)                  {. importc: "nk_property_int"   .}

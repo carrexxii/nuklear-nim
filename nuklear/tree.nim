@@ -1,11 +1,7 @@
 import common
 
-type TreeKind* {.size: sizeof(Flag).} = enum
-    treeNode
-    treeTab
-
 using
-    ctx  : pointer
+    ctx  : ptr Context
     title: cstring
     kind : TreeKind
 

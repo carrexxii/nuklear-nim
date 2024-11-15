@@ -1,273 +1,7 @@
 import bitgen, common
-from font import UserFont
-
-type ConvertResult* = distinct uint32
-ConvertResult.gen_bit_ops convertInvalidParam, convertCmdBufFull, convertVtxBufFull, convertElemBufFull
-const convertSuccess* = ConvertResult 0
-
-type
-    AntiAliasing* {.size: sizeof(Flag).} = enum
-        aaOff
-        aaOn
-
-    DrawVertexLayoutAttribute* {.size: sizeof(Flag).} = enum
-        vtxPosition
-        vtxColour
-        vtxTexcoord
-
-    DrawVertexLayoutFormat* {.size: sizeof(Flag).} = enum
-        fmtSchar
-        fmtSshort
-        fmtSint
-        fmtUchar
-        fmtUshort
-        fmtUint
-        fmtFloat
-        fmtDouble
-
-        fmtR8G8B8
-        fmtR16G15B16
-        fmtR32G32B32
-        fmtR8G8B8A8
-        fmtB8G8R8A8
-        fmtR16G15B16A16
-        fmtR32G32B32A32
-        fmtR32G32B32A32Float
-        fmtR32G32B32A32Double
-        fmtRgb32
-        fmtRgba32
-
-    CommandKind* {.size: sizeof(Flag).} = enum
-        cmdNop
-        cmdScissor
-        cmdLine
-        cmdCurve
-        cmdRect
-        cmdRectFilled
-        cmdRectMultiColour
-        cmdCircle
-        cmdCircleFilled
-        cmdArc
-        cmdArcFilled
-        cmdTriangle
-        cmdTriangleFilled
-        cmdPolygon
-        cmdPolygonFilled
-        cmdPolyline
-        cmdText
-        cmdImage
-        cmdCustom
-
-    CommandClipping* {.size: sizeof(Flag).} = enum
-        clippingOff = false
-        clippingOn  = true
-
-    DrawListStroke* {.size: sizeof(Flag).} = enum
-        strokeOpen   = false
-        strokeClosed = true
-
-const FmtColourStart* = fmtR8G8B8
-const FmtColourEnd*   = fmtRgba32
-
-when defined NkUintDrawIndex:
-    type DrawIndex* = cuint
-else:
-    type DrawIndex* = cushort
-
-type
-    CommandCustomCallback* = proc(canvas: pointer; x, y: cshort; w, h: cushort; cb_data: Handle) {.cdecl.}
-
-    DrawNullTexture* = object
-        tex*: Handle
-        uv* : Vec2
-
-    ConvertConfig* = object
-        global_alpha*    : cfloat
-        line_aa*         : AntiAliasing
-        shape_aa*        : AntiAliasing
-        circle_seg_count*: cuint
-        arc_seg_count*   : cuint
-        curve_seg_count* : cuint
-        tex_null*        : DrawNullTexture
-        layout_elem*     : DrawVertexLayoutElement
-        vtx_sz*          : uint
-        vtx_align*       : uint
-
-    DrawVertexLayoutElement* = object
-        attr*  : DrawVertexLayoutAttribute
-        fmt*   : DrawVertexLayoutFormat
-        offset*: uint
-
-    CommandBuffer* = object
-        base*        : ptr Buffer
-        clip*        : Rect
-        use_clipping*: cint
-        user_data*   : Handle
-        begin*       : uint
-        `end`*       : uint
-        last*        : uint
-
-    DrawCommand* = object
-        elem_count*: cuint
-        clip_rect* : Rect
-        tex*       : Handle
-        when defined NkIncludeCommandUserData:
-            user_data*: Handle
-
-    DrawList* = object
-        clip_rect*  : Rect
-        circle_vtx* : array[12, Vec2]
-        cfg*        : ConvertConfig
-        buf*        : Buffer
-        vertices*   : Buffer
-        elems*      : Buffer
-        elem_count* : cuint
-        vtx_count*  : cuint
-        cmd_count*  : cuint
-        cmd_offset* : uint
-        path_count* : cuint
-        path_offset*: cuint
-        line_aa*    : AntiAliasing
-        shape_aa*   : AntiAliasing
-        when defined NkIncludeCommandUserData:
-            user_data*: Handle
-
-    Command* = object
-        kind*: CommandKind
-        next*: uint
-        when defined NkIncludeCommandUserData:
-            user_data*: Handle
-
-    CommandScissor* = object
-        header*: Command
-        x*, y* : cshort
-        w*, h* : cushort
-
-    CommandLine* = object
-        header*   : Command
-        thickness*: cushort
-        begin*    : Vec2I
-        `end`*    : Vec2I
-        colour*   : Colour
-
-    CommandCurve* = object
-        header*   : Command
-        thickness*: cushort
-        begin*    : Vec2I
-        `end`*    : Vec2I
-        ctrl*     : array[2, Vec2I]
-        colour*   : Colour
-
-    CommandRect* = object
-        header*   : Command
-        rounding* : cushort
-        thickness*: cushort
-        x*, y*    : cshort
-        w*, h*    : cushort
-        colour*   : Colour
-
-    CommandRectFilled* = object
-        header*  : Command
-        rounding*: cushort
-        x*, y*   : cshort
-        w*, h*   : cushort
-        colour*  : Colour
-
-    CommandRectMultiColour* = object
-        header*: Command
-        x*, y* : cshort
-        left*  : Colour
-        top*   : Colour
-        bottom*: Colour
-        right* : Colour
-
-    CommandTriangle* = object
-        header*   : Command
-        thickness*: cushort
-        a*, b*, c*: Vec2I
-        colour*   : Colour
-
-    CommandTriangleFilled* = object
-        header*   : Command
-        a*, b*, c*: Vec2I
-        colour*   : Colour
-
-    CommandCircle* = object
-        header*   : Command
-        x*, y*    : cshort
-        thickness*: cushort
-        w*, h*    : cushort
-        colour*   : Colour
-
-    CommandCircleFilled* = object
-        header*: Command
-        x*, y* : cshort
-        w*, h* : cushort
-        colour*: Colour
-
-    CommandArc* = object
-        header*   : Command
-        cx*, cy*  : cshort
-        r*        : cushort
-        thickness*: cushort
-        a*        : array[2, cfloat]
-        colour*   : Colour
-
-    CommandArcFilled* = object
-        header* : Command
-        cx*, cy*: cshort
-        r*      : cushort
-        a*      : array[2, cfloat]
-        colour* : Colour
-
-    CommandPolygon* = object
-        header*   : Command
-        colour*   : Colour
-        thickness*: cushort
-        pt_count* : cushort
-        pts*      : array[1, Vec2I]
-
-    CommandPolygonFilled* = object
-        header*  : Command
-        colour*  : Colour
-        pt_count*: cushort
-        pts*     : array[1, Vec2I]
-
-    CommandPolyline* = object
-        header*   : Command
-        colour*   : Colour
-        thickness*: cushort
-        pt_count* : cushort
-        pts*      : array[1, Vec2I]
-
-    CommandImage* = object
-        header*: Command
-        x*, y* : cshort
-        w*, h* : cushort
-        img*   : Image
-        colour*: Colour
-
-    CommandCustom* = object
-        header* : Command
-        x*, y*  : cshort
-        w*, h*  : cushort
-        cb_data*: Handle
-        cb*     : CommandCustomCallback
-
-    CommandText* = object
-        header* : Command
-        font*   : UserFont
-        bg*, fg*: Colour
-        x*, y*  : cshort
-        w*, h*  : cushort
-        height* : cfloat
-        len*    : cint
-        str*    : array[1, char]
-
-#[ -------------------------------------------------------------------- ]#
 
 using
-    ctx    : pointer
+    ctx    : ptr Context
     cmd_buf: ptr CommandBuffer
     canvas : ptr DrawList
     colour : Colour
@@ -276,15 +10,11 @@ using
 
 proc nk_begin*(ctx): ptr Command                  {.importc: "nk__begin".}
 proc nk_next*(ctx; cmd: ptr Command): ptr Command {.importc: "nk__next" .}
-# TODO
-# #define nk_foreach(c, ctx) for((c) = nk__begin(ctx); (c) != 0; (c) = nk__next(ctx,c))
 when defined NkIncludeVertexBufferOutput:
-    proc nk_convert*(ctx; cmds: ptr Buffer; verts: ptr Buffer; elems: ptr Buffer; cfg: ptr ConvertConfig): Flag {.importc: "nk_convert"    .}
-    proc nk_draw_begin*(ctx; cmds: ptr Buffer): ptr DrawCommand                                                 {.importc: "nk__draw_begin".}
-    proc nk_draw_end*(ctx; cmds: ptr Buffer): ptr DrawCommand                                                   {.importc: "nk__draw_end"  .}
-    proc nk_draw_next*(cmd: ptr DrawCommand; cmds: ptr Buffer; ctx): ptr DrawCommand                            {.importc: "nk__draw_next" .}
-    # TODO
-    # #define nk_draw_foreach(cmd,ctx, b) for((cmd)=nk__draw_begin(ctx, b); (cmd)!=0; (cmd)=nk__draw_next(cmd, b, ctx))
+    proc nk_convert*(ctx; cmds: ptr Buffer; verts: ptr Buffer; elems: ptr Buffer; cfg: ptr ConvertConfig): ConvertResult {.importc: "nk_convert"    .}
+    proc nk_draw_begin*(ctx; cmds: ptr Buffer): ptr DrawCommand                                                          {.importc: "nk__draw_begin".}
+    proc nk_draw_end*(ctx; cmds: ptr Buffer): ptr DrawCommand                                                            {.importc: "nk__draw_end"  .}
+    proc nk_draw_next*(cmd: ptr DrawCommand; cmds: ptr Buffer; ctx): ptr DrawCommand                                     {.importc: "nk__draw_next" .}
 
 proc nk_stroke_line*(cmd_buf; x0, y0, x1, y1, thickness: cfloat; colour)                      {.importc: "nk_stroke_line"    .}
 proc nk_stroke_curve*(cmd_buf; x0, y0, x1, y1, ctrl1, ctrl2, thickness: cfloat; colour)       {.importc: "nk_stroke_curve"   .}
@@ -311,8 +41,6 @@ proc nk_push_custom*(cmd_buf; rect: CommandCustomCallback; cb_data: Handle)     
 proc nk_draw_list_init*(canvas)                                                                                           {.importc: "nk_draw_list_init" .}
 proc nk_draw_list_setup*(canvas; cfg: ptr ConvertConfig; cmds, verts, elems: ptr Buffer; line_aa, shape_aa: AntiAliasing) {.importc: "nk_draw_list_setup".}
 
-# TODO
-# #define nk_draw_list_foreach(cmd, can, b) for((cmd)=nk__draw_list_begin(can, b); (cmd)!=0; (cmd)=nk__draw_list_next(cmd, b, can))
 proc nk_draw_list_begin*(canvas; buf: ptr Buffer): ptr DrawCommand                      {.importc: "nk__draw_list_begin".}
 proc nk_draw_list_next*(cmd: ptr DrawCommand; buf: ptr Buffer; canvas): ptr DrawCommand {.importc: "nk__draw_list_next" .}
 proc nk_draw_list_end*(canvas; buf: ptr Buffer): ptr DrawCommand                        {.importc: "nk__draw_list_end"  .}
@@ -343,3 +71,26 @@ proc nk_draw_list_add_image*(canvas; img: Image; rect; colour)                  
 proc nk_draw_list_add_text*(canvas; font: ptr UserFont; rect; text: cstring; len: cint; font_h: cfloat; colour)  {.importc: "nk_draw_list_add_text" .}
 when defined NkIncludeCommandUserData:
     proc nk_draw_list_push_userdata*(canvas; user_data: Handle) {.importc: "nk_draw_list_push_userdata".}
+
+#[ -------------------------------------------------------------------- ]#
+
+using ctx: Context
+
+iterator commands*(ctx): Command =
+    var cmd = nk_begin ctx.addr
+    while cmd != nil:
+        yield cmd[]
+        cmd = ctx.addr.nk_next cmd
+
+iterator draw_commands*(ctx; cmds: Buffer): DrawCommand =
+    var cmd = ctx.addr.nk_draw_begin cmds.addr
+    while cmd != nil:
+        yield cmd[]
+        cmd = cmd.nk_draw_next(cmds.addr, ctx.addr)
+    discard ctx.addr.nk_draw_end cmds.addr
+
+func draw_vertex_layout*(elems: varargs[tuple[attr: DrawVertexLayoutAttribute; fmt: DrawVertexLayoutFormat; offset: int]]): seq[DrawVertexLayoutElement] =
+    result.set_len (elems.len + 1)
+    for elem in elems:
+        result.add DrawVertexLayoutElement(attr: elem.attr, fmt: elem.fmt, offset: uint elem.offset)
+    result.add DrawVertexLayoutElement()

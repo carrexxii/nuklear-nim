@@ -1,70 +1,7 @@
-import bitgen, common
-
-type TextAlign* = distinct uint32
-TextAlign.gen_bit_ops(
-    alignLeft, alignCentred, alignRight, alignTop,
-    alignMiddle, alignBottom,
-)
-
-type
-    TextAlignment* {.size: sizeof(Flag).} = enum
-        alignmentLeft    = alignMiddle or alignLeft
-        alignmentCentred = alignMiddle or alignCentred
-        alignmentRight   = alignMiddle or alignRight
-
-    TextEditKind* {.size: sizeof(Flag).} = enum
-        editSingleLine
-        editMultiline
-
-    TextEditMode* {.size: sizeof(Flag).} = enum
-        modeView
-        modeInsert
-        modeReplace
-
-type
-    TextEdit* = object
-        clip*     : Clipboard
-        str*      : String
-        filter*   : PluginFilter
-        scrollbar*: Vec2
-
-        cursor*   : cint
-        sel_start*: cint
-        sel_end*  : cint
-        mode*     : uint8
-
-        cursor_at_end_of_line*: uint8
-        initialized*          : uint8
-        has_preferred_x*      : uint8
-        single_line*          : uint8
-        active*               : uint8
-        _                     : uint8
-        preferred_x*          : cfloat
-        undo*                 : TextUndoState
-
-    Clipboard* = object
-        user_data*: Handle
-        paste*    : PluginPaste
-        copy*     : PluginCopy
-
-    TextUndoRecord* = object
-        where*       : cint
-        ins_len*     : int16
-        del_len*     : int16
-        char_storage*: int16
-
-    TextUndoState* = object
-        undo_rec*       : array[NkTextEditUndoStateCount, TextUndoRecord]
-        undo_char*      : array[NkTextEditUndoCharCount, Rune]
-        undo_point*     : int16
-        redo_point*     : int16
-        undo_char_point*: int16
-        redo_char_point*: int16
-
-#[ -------------------------------------------------------------------- ]#
+import common
 
 using
-    ctx : pointer
+    ctx : ptr Context
     text: cstring
 
 proc nk_text*(ctx; text; len: cint; flags: Flag)                          {.importc: "nk_text"              .}

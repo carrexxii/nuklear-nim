@@ -1,6 +1,15 @@
 from std/strformat import `&`
 
 const
+    NkUtfSize*             = 4'i32
+    NkUtfInvalid*          = 0xFFFD'u32
+    NkPi*                  = 3.141592654'f32
+    NkMaxFloatPrecision*   = 2'i32
+    NkWidgetDisableFactor* = 0.5'f32
+    # Hardcoded due to recursive issues
+    NkValuePageCapacity* = max(480, 464) div (sizeof cuint) div 2 # max(sizeof Window, sizeof Panel) div (sizeof cuint) div 2
+
+const
     NkMaxLayoutRowTemplateColumns* {.intdefine.} = 16
     NkWindowMaxName*               {.intdefine.} = 64
     NkMaxNumberBuffer*             {.intdefine.} = 64
@@ -33,7 +42,5 @@ when defined NkIncludeStandardIo        : {.passC: "-DNK_INCLUDE_STANDARD_IO"   
 when defined NkButtonTriggerOnRelease   : {.passC: "-DNK_BUTTON_TRIGGER_ON_RELEASE"   .}
 when defined NkIncludeStandardVarargs   : {.passC: "-DNK_INCLUDE_STANDARD_VARARGS"    .}
 
-{.passC: &"""
-    -DNK_INCLUDE_STANDARD_BOOL
-    -DNK_MAX_LAYOUT_ROW_TEMPLATE_COLUMNS={NkMaxLayoutRowTemplateColumns}
-""".}
+{.passC: "-DNK_INCLUDE_STANDARD_BOOL".}
+{.passC: &"-DNK_MAX_LAYOUT_ROW_TEMPLATE_COLUMNS={NkMaxLayoutRowTemplateColumns}".}
