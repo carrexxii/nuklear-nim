@@ -11,10 +11,10 @@ using
 proc nk_begin*(ctx): ptr Command                  {.importc: "nk__begin".}
 proc nk_next*(ctx; cmd: ptr Command): ptr Command {.importc: "nk__next" .}
 when defined NkIncludeVertexBufferOutput:
-    proc nk_convert*(ctx; cmds: ptr Buffer; verts: ptr Buffer; elems: ptr Buffer; cfg: ptr ConvertConfig): ConvertResult {.importc: "nk_convert"    .}
-    proc nk_draw_begin*(ctx; cmds: ptr Buffer): ptr DrawCommand                                                          {.importc: "nk__draw_begin".}
-    proc nk_draw_end*(ctx; cmds: ptr Buffer): ptr DrawCommand                                                            {.importc: "nk__draw_end"  .}
-    proc nk_draw_next*(cmd: ptr DrawCommand; cmds: ptr Buffer; ctx): ptr DrawCommand                                     {.importc: "nk__draw_next" .}
+    proc nk_convert*(ctx; cmds, verts, elems: ptr Buffer; cfg: ptr ConvertConfig): ConvertResult {.importc: "nk_convert"    .}
+    proc nk_draw_begin*(ctx; cmds: ptr Buffer): ptr DrawCommand                                  {.importc: "nk__draw_begin".}
+    proc nk_draw_end*(ctx; cmds: ptr Buffer): ptr DrawCommand                                    {.importc: "nk__draw_end"  .}
+    proc nk_draw_next*(cmd: ptr DrawCommand; cmds: ptr Buffer; ctx): ptr DrawCommand             {.importc: "nk__draw_next" .}
 
 proc nk_stroke_line*(cmd_buf; x0, y0, x1, y1, thickness: cfloat; colour)                      {.importc: "nk_stroke_line"    .}
 proc nk_stroke_curve*(cmd_buf; x0, y0, x1, y1, ctrl1, ctrl2, thickness: cfloat; colour)       {.importc: "nk_stroke_curve"   .}
@@ -74,6 +74,7 @@ when defined NkIncludeCommandUserData:
 
 #[ -------------------------------------------------------------------- ]#
 
+{.push inline.}
 using ctx: Context
 
 iterator commands*(ctx): Command =
@@ -82,15 +83,22 @@ iterator commands*(ctx): Command =
         yield cmd[]
         cmd = ctx.addr.nk_next cmd
 
-iterator draw_commands*(ctx; cmds: Buffer): DrawCommand =
+iterator commands*(ctx; cmds: Buffer): DrawCommand =
     var cmd = ctx.addr.nk_draw_begin cmds.addr
     while cmd != nil:
         yield cmd[]
         cmd = cmd.nk_draw_next(cmds.addr, ctx.addr)
     discard ctx.addr.nk_draw_end cmds.addr
 
-func draw_vertex_layout*(elems: varargs[tuple[attr: DrawVertexLayoutAttribute; fmt: DrawVertexLayoutFormat; offset: int]]): seq[DrawVertexLayoutElement] =
-    result.set_len (elems.len + 1)
+proc create_vertex_layout*(elems: varargs[tuple[attr: DrawVertexLayoutAttribute; fmt: DrawVertexLayoutFormat; offset: int]]): seq[DrawVertexLayoutElement] =
+    result = new_seq_of_cap[DrawVertexLayoutElement] (elems.len + 1)
     for elem in elems:
         result.add DrawVertexLayoutElement(attr: elem.attr, fmt: elem.fmt, offset: uint elem.offset)
-    result.add DrawVertexLayoutElement()
+    result.add DrawVertexLayoutElement(attr: vtxLayoutEnd, fmt: fmtEnd, offset: 0)
+
+proc convert*(ctx; cfg: ConvertConfig; cmds, vtxs, idxs: Buffer): ConvertResult {.discardable.} =
+    result = ctx.addr.nk_convert(cmds.addr, vtxs.addr, idxs.addr, cfg.addr)
+    nk_assert result == convertSuccess, &"""Failed to convert commands to buffers: \n\t{result}\nConfig: {cfg}\n
+                                            Commands = {cmds}; Vertices = {vtxs}; Indices = {idxs}"""
+
+{.pop.}

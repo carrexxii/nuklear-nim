@@ -37,10 +37,10 @@ when defined NkIncludeDefaultFont       : {.passC: "-DNK_INCLUDE_DEFAULT_FONT"  
 when defined NkIncludeFontBaking        : {.passC: "-DNK_INCLUDE_FONT_BAKING"         .}
 when defined NkIncludeVertexBufferOutput: {.passC: "-DNK_INCLUDE_VERTEX_BUFFER_OUTPUT".}
 when defined NkIncludeCommandUserData   : {.passC: "-DNK_INCLUDE_COMMAND_USER_DATA"   .}
-when defined NkUintDrawIndex            : {.passC: "-DNK_UINT_DRAW_INDEX"             .}
 when defined NkIncludeStandardIo        : {.passC: "-DNK_INCLUDE_STANDARD_IO"         .}
-when defined NkButtonTriggerOnRelease   : {.passC: "-DNK_BUTTON_TRIGGER_ON_RELEASE"   .}
 when defined NkIncludeStandardVarargs   : {.passC: "-DNK_INCLUDE_STANDARD_VARARGS"    .}
+when defined NkButtonTriggerOnRelease   : {.passC: "-DNK_BUTTON_TRIGGER_ON_RELEASE"   .}
+when defined NkUintDrawIndex            : {.passC: "-DNK_UINT_DRAW_INDEX"             .}
 
 {.passC: "-DNK_INCLUDE_STANDARD_BOOL".}
 {.passC: &"-DNK_MAX_LAYOUT_ROW_TEMPLATE_COLUMNS={NkMaxLayoutRowTemplateColumns}".}

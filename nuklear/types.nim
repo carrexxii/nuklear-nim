@@ -54,51 +54,50 @@ const # This is for `PanelSet`
     PSetPopup    = PSetNonBlock or panelPopup
     PSetSub      = PSetPopup or panelGroup
 
-{.push size: sizeof(Flag).}
 type
-    Heading* = enum
+    Heading* {.size: sizeof(cint).} = enum
         headingUp
         headingRight
         headingDown
         headingLeft
 
-    ButtonBehaviour* = enum
+    ButtonBehaviour* {.size: sizeof(cint).} = enum
         btnDefault
         btnRepeater
 
-    Modify* = enum
+    Modify* {.size: sizeof(cint).} = enum
         modifyFixed
         modifyModifiable
 
-    Orientation* = enum
+    Orientation* {.size: sizeof(cint).} = enum
         orientVertical
         orientHorizontal
 
-    CollapseState* = enum
+    CollapseState* {.size: sizeof(cint).} = enum
         collapseMinimized
         collapseMaximized
 
-    ShowState* = enum
+    ShowState* {.size: sizeof(cint).} = enum
         showHidden
         showShown
 
-    ChartEvent* = enum
+    ChartEvent* {.size: sizeof(cint).} = enum
         chartHovering = 0x01
         chartClicked  = 0x02
 
-    ColourFormat* = enum
+    ColourFormat* {.size: sizeof(cint).} = enum
         colourRgb
         colourRgba
 
-    PopupKind* = enum
+    PopupKind* {.size: sizeof(cint).} = enum
         popupStatic
         popupDynamic
 
-    LayoutFormat* = enum
+    LayoutFormat* {.size: sizeof(cint).} = enum
         layoutDynamic
         layoutStatic
 
-    SymbolKind* = enum
+    SymbolKind* {.size: sizeof(cint).} = enum
         symNone
         symX
         symUnderscore
@@ -117,26 +116,28 @@ type
         symTriLeftOutline
         symTriRightOutline
 
-    AllocationKind* = enum
+    AllocationKind* {.size: sizeof(cint).} = enum
         allocFixed
         allocDynamic
 
-    BufferAllocationKind* = enum
+    BufferAllocationKind* {.size: sizeof(cint).} = enum
         bufAllocFront
         bufAllocBack
+        bufAllocMax
 
     #[ ---------------------------------------------------------------- ]#
 
-    AntiAliasing* = enum
+    AntiAliasing* {.size: sizeof(cint).} = enum
         aaOff
         aaOn
 
-    DrawVertexLayoutAttribute* = enum
+    DrawVertexLayoutAttribute* {.size: sizeof(cint).} = enum
         vtxPosition
         vtxColour
         vtxTexcoord
+        vtxLayoutEnd
 
-    DrawVertexLayoutFormat* = enum
+    DrawVertexLayoutFormat* {.size: sizeof(cint).} = enum
         fmtSchar
         fmtSshort
         fmtSint
@@ -158,7 +159,9 @@ type
         fmtRgb32
         fmtRgba32
 
-    CommandKind* = enum
+        fmtEnd
+
+    CommandKind* {.size: sizeof(cint).} = enum
         cmdNop
         cmdScissor
         cmdLine
@@ -179,27 +182,27 @@ type
         cmdImage
         cmdCustom
 
-    CommandClipping* = enum
+    CommandClipping* {.size: sizeof(cint).} = enum
         clippingOff = false
         clippingOn  = true
 
-    DrawListStroke* = enum
+    DrawListStroke* {.size: sizeof(cint).} = enum
         strokeOpen   = false
         strokeClosed = true
 
     #[ ---------------------------------------------------------------- ]#
 
-    FontAtlasFormat* = enum
+    FontAtlasFormat* {.size: sizeof(cint).} = enum
         fontAtlasAlpha8
         fontAtlasRgba32
 
-    FontCoordKind* = enum
+    FontCoordKind* {.size: sizeof(cint).} = enum
         fontCoordUv
         fontCoordPixel
     
     #[ ---------------------------------------------------------------- ]#
 
-    KeyKind* = enum
+    KeyKind* {.size: sizeof(cint).} = enum
         keyNone
         keyShift
         keyCtrl
@@ -231,7 +234,7 @@ type
         keyScrollDown
         keyScrollUp
 
-    Button* = enum
+    Button* {.size: sizeof(cint).} = enum
         btnLeft
         btnMiddle
         btnRight
@@ -239,14 +242,14 @@ type
 
     #[ ---------------------------------------------------------------- ]#
 
-    WidgetAlignment* = enum
+    WidgetAlignment* {.size: sizeof(cint).} = enum
         alignLeft    = widgetAlignMiddle or widgetAlignLeft
         alignCentred = widgetAlignMiddle or widgetAlignCentred
         alignRight   = widgetAlignMiddle or widgetAlignRight
 
     #[ ---------------------------------------------------------------- ]#
 
-    StyleColours* = enum
+    StyleColours* {.size: sizeof(cint).} = enum
         colourText
         colourWin
         colourHeader
@@ -276,7 +279,7 @@ type
         colourScrollbarCursorActive
         colourTabHeader
 
-    StyleCursor* = enum
+    StyleCursor* {.size: sizeof(cint).} = enum
         cursorArrow
         cursorText
         cursorMove
@@ -285,57 +288,57 @@ type
         cursorResizeTopLeftDownRight
         cursorResizeTopRightDownLeft
 
-    StyleItemKind* = enum
+    StyleItemKind* {.size: sizeof(cint).} = enum
         itemColour
         itemImage
         itemNineSlice
 
-    StyleHeaderAlign* = enum
+    StyleHeaderAlign* {.size: sizeof(cint).} = enum
         alignLeft
         alignRight
 
     #[ ---------------------------------------------------------------- ]#
 
-    TextAlignment* = enum
+    TextAlignment* {.size: sizeof(cint).} = enum
         alignLeft    = textAlignMiddle or textAlignLeft
         alignCentred = textAlignMiddle or textAlignCentred
         alignRight   = textAlignMiddle or textAlignRight
 
-    TextEditKind* = enum
+    TextEditKind* {.size: sizeof(cint).} = enum
         editSingleLine
         editMultiline
 
-    TextEditMode* = enum
+    TextEditMode* {.size: sizeof(cint).} = enum
         modeView
         modeInsert
         modeReplace
 
     #[ ---------------------------------------------------------------- ]#
 
-    TreeKind* = enum
+    TreeKind* {.size: sizeof(cint).} = enum
         treeNode
         treeTab
 
     #[ ---------------------------------------------------------------- ]#
 
-    WidgetLayoutState* = enum
+    WidgetLayoutState* {.size: sizeof(cint).} = enum
         layoutInvalid
         layoutValid
         layoutRom
         layoutDisabled
 
-    ChartKind* = enum
+    ChartKind* {.size: sizeof(cint).} = enum
         chartLine
         chartColumn
 
     #[ ---------------------------------------------------------------- ]#
 
-    PanelSet* = enum
+    PanelSet* {.size: sizeof(cint).} = enum
         panelSetNonBlock = PSetNonBlock
         panelSetPopup    = PSetPopup
         panelSetSub      = PSetSub
 
-    PanelRowLayout* = enum
+    PanelRowLayout* {.size: sizeof(cint).} = enum
         layoutDynamicFixed
         layoutDynamicRow
         layoutDynamicFree
@@ -345,7 +348,6 @@ type
         layoutStaticFree
         layoutStatic
         layoutTemplate
-{.pop.} # size: sizeof(Flag)
 
 const FmtColourStart* = fmtR8G8B8
 const FmtColourEnd*   = fmtRgba32
@@ -364,25 +366,25 @@ type
         r*, g*, b*, a*: uint8
 
     ColourF* = object
-        r*, g*, b*, a*: float32
+        r*, g*, b*, a*: cfloat
 
     Vec2I* = object
-        x*, y*: int16
+        x*, y*: cshort
 
     Vec2* = object
-        x*, y*: float32
+        x*, y*: cfloat
 
     RectI* = object
-        x*, y*, w*, h*: int16
+        x*, y*, w*, h*: cshort
 
     Rect* = object
-        x*, y*, w*, h*: float32
+        x*, y*, w*, h*: cfloat
 
     Glyph* = array[NkUtfSize, char]
 
     Handle* {.union.} = object
         p* : pointer
-        id*: int32
+        id*: cint
 
     Image* = object
         handle*: Handle
@@ -410,7 +412,7 @@ type
     PluginFree*   = proc(handle: Handle; old: pointer) {.cdecl.}
     PluginFilter* = proc(text_edit: pointer; unicode: Rune): bool {.cdecl.}
     PluginPaste*  = proc(handle: Handle; text_edit: pointer) {.cdecl.}
-    PluginCopy*   = proc(handle: Handle; str: cstring; len: int32) {.cdecl.}
+    PluginCopy*   = proc(handle: Handle; str: cstring; len: cint) {.cdecl.}
 
     MemoryStatus* = object
         mem*    : pointer
@@ -434,11 +436,11 @@ type
         free*     : PluginFree
 
     Buffer* = object
-        markers*    : array[1 + int BufferAllocationKind.high, BufferMarker]
+        markers*    : array[bufAllocMax, BufferMarker]
         pool*       : Allocator
         kind*       : AllocationKind
         mem*        : Memory
-        grow_factor*: float32
+        grow_factor*: cfloat
         alloced*    : uint
         needed*     : uint
         calls*      : uint
@@ -451,16 +453,18 @@ type
         style*            : Style
         mem*              : Buffer
         clip*             : Clipboard
-        last_widget_state*: Flag
+        last_widget_state*: WidgetState
         btn_behaviour*    : ButtonBehaviour
         stacks*           : ConfigurationStacks
         dt_secs*          : cfloat
+
         when defined NkIncludeVertexBufferOutput:
             draw_lst*: DrawList
         when defined NkIncludeCommandUserData:
             user_data*: Handle
         text_edit*: TextEdit
         overlay*  : CommandBuffer
+
         build*    : cint
         use_pool* : cint
         pool*     : Pool
