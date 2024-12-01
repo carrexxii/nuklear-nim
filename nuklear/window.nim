@@ -51,3 +51,21 @@ proc nk_group_scrolled_begin*(ctx; offset: ptr Scroll; title; flags: Flag)      
 proc nk_group_scrolled_end*(ctx)                                                              {. importc: "nk_group_scrolled_end"          .}
 proc nk_group_get_scroll*(ctx; id: cstring; x_offset, y_offset: ptr uint32)                   {. importc: "nk_group_get_scroll"            .}
 proc nk_group_set_scroll*(ctx; id: cstring; x_offset, y_offset: uint32)                       {. importc: "nk_group_set_scroll"            .}
+
+#[ -------------------------------------------------------------------- ]#
+
+using ctx: var Context
+
+{.push inline.}
+
+proc begin*(ctx; bounds: Rect; flags: PanelFlag; name, title = ""): bool {.discardable.} =
+    if title == "":
+        result = nk_begin(ctx.addr, cstring name, bounds, flags)
+    else:
+        result = nk_begin_titled(ctx.addr, cstring name, cstring title, bounds, flags)
+    nk_assert result, &"Failed to begin Nuklear window \"{name}\"/\"{title}\" (bounds: {bounds}; flags: {flags})"
+
+proc `end`*(ctx) = 
+    nk_end ctx.addr
+
+{.pop.}

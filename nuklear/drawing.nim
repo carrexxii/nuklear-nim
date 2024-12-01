@@ -74,8 +74,9 @@ when defined NkIncludeCommandUserData:
 
 #[ -------------------------------------------------------------------- ]#
 
-{.push inline.}
 using ctx: Context
+
+{.push inline.}
 
 iterator commands*(ctx): Command =
     var cmd = nk_begin ctx.addr

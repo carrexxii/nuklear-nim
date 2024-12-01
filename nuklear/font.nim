@@ -30,3 +30,32 @@ when defined NkIncludeDefaultFont:
     proc nk_font_atlas_add_default*(atlas; h: cfloat; cfg): ptr Font {.importc: "nk_font_atlas_add_default".}
 when defined NkIncludeStandardIo:
     proc nk_font_atlas_add_from_file*(atlas; path: cstring; h: cfloat; cfg): ptr Font {.importc: "nk_font_atlas_add_from_file".}
+
+#[ -------------------------------------------------------------------- ]#
+
+using atlas: var FontAtlas
+
+{.push inline.}
+
+proc create_atlas*(allocator = NimAllocator): FontAtlas =
+    nk_font_atlas_init result.addr, allocator.addr
+
+proc begin*(atlas) =
+    nk_font_atlas_begin atlas.addr
+
+proc `end`*(atlas; tex: Handle | pointer; draw_null_tex: pointer = nil) =
+    nk_font_atlas_end atlas.addr, tex, draw_null_tex
+
+proc add*(atlas; cfg: FontConfig): ptr Font {.discardable.} =
+    nk_font_atlas_add atlas.addr, cfg.addr
+
+proc bake*(atlas; fmt = fontAtlasAlpha8): tuple[pxs: pointer; w, h: int32] =
+    var w, h: cint
+    result.pxs = nk_font_atlas_bake(atlas.addr, w.addr, h.addr, fmt)
+    result.w   = int32 w
+    result.h   = int32 h
+
+proc clear*(atlas)   = nk_font_atlas_clear   atlas.addr
+proc cleanup*(atlas) = nk_font_atlas_cleanup atlas.addr
+
+{.pop.}

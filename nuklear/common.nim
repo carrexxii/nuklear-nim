@@ -21,6 +21,8 @@ const NimAllocator* = Allocator(
     free     : nim_free,
 )
 
+converter `Handle -> bool`*(h: Handle): bool = h.p != nil
+
 #[ -------------------------------------------------------------------- ]#
 
 using
@@ -43,17 +45,17 @@ proc nk_buffer_total*(buf): uint                               {.importc: "nk_bu
 
 {.push inline.}
 using
-    buf : Buffer
+    buf : var Buffer
     kind: BufferAllocationKind
 
 proc create_buffer*(sz: SomeInteger): Buffer = nk_buffer_init result.addr, NimAllocator.addr, uint sz
 
 proc reset*(buf; kind) = nk_buffer_reset buf.addr, kind
 proc clear*(buf)       = nk_buffer_clear buf.addr
-proc destroy*(buf)     = nk_buffer_free buf.addr
+proc destroy*(buf)     = nk_buffer_free  buf.addr
 
 proc mem*(buf): pointer = nk_buffer_memory buf.addr
-proc total*(buf): uint  = nk_buffer_total buf.addr
+proc total*(buf): uint  = nk_buffer_total  buf.addr
 
 {.pop.}
 
