@@ -44,19 +44,44 @@ proc nk_button_set_behavior*(ctx; behaviour: ButtonBehaviour)                   
 proc nk_button_push_behavior*(ctx; behaviour: ButtonBehaviour): bool                  {.importc: "nk_button_push_behavior"      .}
 proc nk_button_pop_behavior*(ctx): bool                                               {.importc: "nk_button_pop_behavior"       .}
 
-proc nk_option_label*(ctx; label; active: bool): bool                                                {.importc: "nk_option_label"      .}
-proc nk_option_label_align*(ctx; label; active: bool; widget_align, text_align: TextAlignment): bool {.importc: "nk_option_label_align".}
+proc nk_option_label*(ctx; label; is_active: bool): bool                                                          {.importc: "nk_option_label"      .}
+proc nk_option_label_align*(ctx; label; is_active: bool; widget_align, text_align: TextAlignment): bool           {.importc: "nk_option_label_align".}
+proc nk_option_text*(ctx; text; len: cint; is_active: bool): bool                                                 {.importc: "nk_option_text"       .}
+proc nk_option_text_align*(ctx; text; len: cint; is_active: bool; widget_align, text_align: TextAlignment): bool  {.importc: "nk_option_text_align" .}
 
 proc nk_slider_float*(ctx; min: cfloat; val: ptr cfloat; max, step: cfloat): bool {.importc: "nk_slider_float".}
 
 #[ -------------------------------------------------------------------- ]#
 
-using ctx: Context
+using ctx: var Context
 
-proc slider*(ctx; min, max, step: float32): ref float32 =
-    result = new float32
-    if not nk_slider_float(ctx.addr, cfloat min, result[].addr, cfloat max, cfloat step):
-        return nil
+{.push inline.}
+
+proc slider*(ctx; val: ptr float32; min, max, step: float32): bool {.discardable.} =
+    nk_slider_float(ctx.addr, cfloat min, val, cfloat max, cfloat step)
+
+proc button*(ctx; text: string): bool    = nk_button_text   ctx.addr, cstring text, cint text.len
+proc button*(ctx; colour: Colour): bool  = nk_button_colour ctx.addr, colour
+proc button*(ctx; sym: SymbolKind): bool = nk_button_symbol ctx.addr, sym
+proc button*(ctx; img: Image): bool      = nk_button_image  ctx.addr, img
+proc button*(ctx; text: string; sym: SymbolKind; align = TextAlignment.alignLeft): bool =
+    nk_button_symbol_text ctx.addr, sym, cstring text, cint text.len, align
+proc button*(ctx; text: string; img: Image; align = TextAlignment.alignLeft): bool =
+    nk_button_image_text ctx.addr, img, cstring text, cint text.len, align
+
+proc `behaviour=`*(ctx; behave: ButtonBehaviour) =
+    nk_button_set_behavior ctx.addr, behave
+proc push*(ctx; behave: ButtonBehaviour): bool {.discardable.} =
+    nk_button_push_behavior ctx.addr, behave
+proc pop_behaviour*(ctx): bool {.discardable.} =
+    nk_button_pop_behavior ctx.addr
+
+proc option*(ctx; text: string; is_active: bool): bool =
+    nk_option_text ctx.addr, cstring text, cint text.len, is_active
+proc option*(ctx; text: string; is_active: bool; widget_align, text_align: TextAlignment): bool =
+    nk_option_text_align ctx.addr, cstring text, cint text.len, is_active, widget_align, text_align
+
+{.pop.}
 
 # NK_API float nk_slide_float(struct nk_context*, float min, float val, float max, float step);
 # NK_API int nk_slide_int(struct nk_context*, int min, int val, int max, int step);
@@ -80,8 +105,6 @@ proc slider*(ctx; min, max, step: float32): ref float32 =
 # NK_API nk_bool nk_radio_label_align(struct nk_context *ctx, const char *label, nk_bool *active, nk_flags widget_alignment, nk_flags text_alignment);
 # NK_API nk_bool nk_radio_text(struct nk_context*, const char*, int, nk_bool *active);
 # NK_API nk_bool nk_radio_text_align(struct nk_context *ctx, const char *text, int len, nk_bool *active, nk_flags widget_alignment, nk_flags text_alignment);
-# NK_API nk_bool nk_option_text(struct nk_context*, const char*, int, nk_bool active);
-# NK_API nk_bool nk_option_text_align(struct nk_context *ctx, const char *text, int len, nk_bool is_active, nk_flags widget_alignment, nk_flags text_alignment);
 
 # Selectable
 # NK_API nk_bool nk_selectable_label(struct nk_context*, const char*, nk_flags align, nk_bool *value);

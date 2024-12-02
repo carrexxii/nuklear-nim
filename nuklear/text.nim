@@ -1,21 +1,21 @@
 import common
 
 using
-    ctx : ptr Context
-    text: cstring
+    ctx: ptr Context
+    str: cstring
 
-proc nk_text*(ctx; text; len: cint; flags: Flag)                          {.importc: "nk_text"              .}
-proc nk_text_coloured*(ctx; text; len: cint; flags: Flag; colour: Colour) {.importc: "nk_text_coloured"     .}
-proc nk_text_wrap*(ctx; text; len: cint)                                  {.importc: "nk_text_wrap"         .}
-proc nk_text_wrap_coloured*(ctx; text; len: cint; colour: Colour)         {.importc: "nk_text_wrap_coloured".}
+proc nk_text*(ctx; str; len: cint; align: TextAlignment)                          {.importc: "nk_text"             .}
+proc nk_text_coloured*(ctx; str; len: cint; align: TextAlignment; colour: Colour) {.importc: "nk_text_colored"     .}
+proc nk_text_wrap*(ctx; str; len: cint)                                           {.importc: "nk_text_wrap"        .}
+proc nk_text_wrap_coloured*(ctx; str; len: cint; colour: Colour)                  {.importc: "nk_text_wrap_colored".}
 
-proc nk_label*(ctx; text; align: TextAlignment)                          {.importc: "nk_label"              .}
-proc nk_label_coloured*(ctx; text; align: TextAlignment; colour: Colour) {.importc: "nk_label_coloured"     .}
-proc nk_label_wrap*(ctx; text)                                           {.importc: "nk_label_wrap"         .}
-proc nk_label_coloured_wrap*(ctx; text: cstring; colour: Colour)         {.importc: "nk_label_coloured_wrap".}
+proc nk_label*(ctx; str; align: TextAlignment)                          {.importc: "nk_label"             .}
+proc nk_label_coloured*(ctx; str; align: TextAlignment; colour: Colour) {.importc: "nk_label_colored"     .}
+proc nk_label_wrap*(ctx; str)                                           {.importc: "nk_label_wrap"        .}
+proc nk_label_coloured_wrap*(ctx; str: cstring; colour: Colour)         {.importc: "nk_label_colored_wrap".}
 
-proc nk_image*(ctx; img: Image)                        {.importc: "nk_image"       .}
-proc nk_image_colour*(ctx; img: Image; colour: Colour) {.importc: "nk_image_colour".}
+proc nk_image*(ctx; img: Image)                        {.importc: "nk_image"      .}
+proc nk_image_colour*(ctx; img: Image; colour: Colour) {.importc: "nk_image_color".}
 
 when defined NkIncludeStandardVarargs:
     discard
@@ -35,6 +35,25 @@ when defined NkIncludeStandardVarargs:
     # NK_API void nk_value_color_float(struct nk_context*, const char *prefix, struct nk_color);
     # NK_API void nk_value_color_hex(struct nk_context*, const char *prefix, struct nk_color);
 
+#[ -------------------------------------------------------------------- ]#
+
+using
+    ctx: var Context
+    str: string
+
+{.push inline.}
+
+proc text*(ctx; str; align = TextAlignment.alignLeft)      = nk_text      ctx.addr, cstring str, cint str.len, align
+proc text_wrap*(ctx; str; align = TextAlignment.alignLeft) = nk_text_wrap ctx.addr, cstring str, cint str.len
+proc text*(ctx; str; align = TextAlignment.alignLeft; colour = Colour())      = nk_text_coloured      ctx.addr, cstring str, cint str.len, align, colour
+proc text_wrap*(ctx; str; align = TextAlignment.alignLeft; colour = Colour()) = nk_text_wrap_coloured ctx.addr, cstring str, cint str.len, colour
+
+proc label*(ctx; str; align = TextAlignment.alignLeft)      = nk_label      ctx.addr, cstring str, align
+proc label_wrap*(ctx; str; align = TextAlignment.alignLeft) = nk_label_wrap ctx.addr, cstring str
+proc label*(ctx; str; align = TextAlignment.alignLeft; colour: Colour)      = nk_label_coloured      ctx.addr, cstring str, align, colour
+proc label_wrap*(ctx; str; align = TextAlignment.alignLeft; colour: Colour) = nk_label_coloured_wrap ctx.addr, cstring str, colour
+
+{.pop.}
 
 # enum nk_edit_flags {
 #     NK_EDIT_DEFAULT                 = 0,

@@ -1,4 +1,4 @@
-import defines, types
+import std/macros, defines, types
 from std/strformat import `&`
 export defines, types, `&`
 
@@ -43,19 +43,32 @@ proc nk_buffer_memory*(buf): pointer                           {.importc: "nk_bu
 proc nk_buffer_memory_const*(buf): pointer                     {.importc: "nk_buffer_memory_const".}
 proc nk_buffer_total*(buf): uint                               {.importc: "nk_buffer_total"       .}
 
+#[ -------------------------------------------------------------------- ]#
+
 {.push inline.}
+
 using
     buf : var Buffer
     kind: BufferAllocationKind
 
-proc create_buffer*(sz: SomeInteger): Buffer = nk_buffer_init result.addr, NimAllocator.addr, uint sz
+proc create_buffer*(sz: SomeInteger): Buffer =
+    nk_buffer_init result.addr, NimAllocator.addr, uint sz
 
-proc reset*(buf; kind) = nk_buffer_reset buf.addr, kind
-proc clear*(buf)       = nk_buffer_clear buf.addr
-proc destroy*(buf)     = nk_buffer_free  buf.addr
-
+proc reset*(buf; kind)  = nk_buffer_reset buf.addr, kind
 proc mem*(buf): pointer = nk_buffer_memory buf.addr
 proc total*(buf): uint  = nk_buffer_total  buf.addr
+
+macro destroy*(bufs: varargs[var Buffer]): untyped =
+    result = new_stmt_list()
+    for buf in bufs:
+        result.add quote do:
+            nk_buffer_free `buf`.addr
+
+macro clear*(bufs: varargs[var Buffer]): untyped =
+    result = new_stmt_list()
+    for buf in bufs:
+        result.add quote do:
+            nk_buffer_clear `buf`.addr
 
 {.pop.}
 

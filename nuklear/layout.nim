@@ -49,17 +49,23 @@ proc begin*(ctx; fmt: LayoutFormat; cols: SomeInteger; h: SomeNumber) =
 proc end_row*(ctx) = 
     nk_layout_row_end ctx.addr
 
-proc row*(ctx; cols: SomeInteger; h: SomeNumber; item_w: SomeNumber) =
-    nk_layout_row_static ctx.addr, cfloat h, cint item_w, cint cols
-proc row*(ctx; cols: SomeInteger; h: SomeNumber) =
-    nk_layout_row_dynamic ctx.addr, cfloat h, cint cols
+proc row*(ctx; cols: SomeInteger; h: SomeNumber; item_w: SomeNumber) = nk_layout_row_static  ctx.addr, cfloat h, cint item_w, cint cols
+proc row*(ctx; cols: SomeInteger; h: SomeNumber)                     = nk_layout_row_dynamic ctx.addr, cfloat h, cint cols
 
 proc push*(ctx; val: SomeNumber) =
     nk_layout_row_push ctx.addr, cfloat val
 
-template layout_row*(ctx: var Context; cols: SomeInteger; h: SomeNumber; body) =
+template row_static*(ctx; cols: SomeInteger; h: SomeNumber; item_w: SomeNumber; body: untyped) = 
+    row ctx, cols, h, item_w
     with ctx:
-        begin layoutDynamic, h, cols
+        body
+template row_dynamic*(ctx; cols: SomeInteger; h: SomeNumber; body: untyped) = 
+    row ctx, cols, h
+    with ctx:
+        body
+template row_custom*(ctx: var Context; cols: SomeInteger; h: SomeNumber; body: untyped) =
+    with ctx:
+        begin layoutStatic, cols, h
         body
         end_row
 
