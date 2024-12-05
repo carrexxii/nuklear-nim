@@ -64,9 +64,9 @@ proc button*(ctx; text: string): bool    = nk_button_text   ctx.addr, cstring te
 proc button*(ctx; colour: Colour): bool  = nk_button_colour ctx.addr, colour
 proc button*(ctx; sym: SymbolKind): bool = nk_button_symbol ctx.addr, sym
 proc button*(ctx; img: Image): bool      = nk_button_image  ctx.addr, img
-proc button*(ctx; text: string; sym: SymbolKind; align = TextAlignment.alignLeft): bool =
+proc button*(ctx; text: string; sym: SymbolKind; align = taLeft): bool =
     nk_button_symbol_text ctx.addr, sym, cstring text, cint text.len, align
-proc button*(ctx; text: string; img: Image; align = TextAlignment.alignLeft): bool =
+proc button*(ctx; text: string; img: Image; align = taLeft): bool =
     nk_button_image_text ctx.addr, img, cstring text, cint text.len, align
 
 proc `behaviour=`*(ctx; behave: ButtonBehaviour) =

@@ -17,24 +17,6 @@ proc nk_label_coloured_wrap*(ctx; str: cstring; colour: Colour)         {.import
 proc nk_image*(ctx; img: Image)                        {.importc: "nk_image"      .}
 proc nk_image_colour*(ctx; img: Image; colour: Colour) {.importc: "nk_image_color".}
 
-when defined NkIncludeStandardVarargs:
-    discard
-    # NK_API void nk_labelf(struct nk_context*, nk_flags, NK_PRINTF_FORMAT_STRING const char*, ...) NK_PRINTF_VARARG_FUNC(3);
-    # NK_API void nk_labelf_colored(struct nk_context*, nk_flags, struct nk_color, NK_PRINTF_FORMAT_STRING const char*,...) NK_PRINTF_VARARG_FUNC(4);
-    # NK_API void nk_labelf_wrap(struct nk_context*, NK_PRINTF_FORMAT_STRING const char*,...) NK_PRINTF_VARARG_FUNC(2);
-    # NK_API void nk_labelf_colored_wrap(struct nk_context*, struct nk_color, NK_PRINTF_FORMAT_STRING const char*,...) NK_PRINTF_VARARG_FUNC(3);
-    # NK_API void nk_labelfv(struct nk_context*, nk_flags, NK_PRINTF_FORMAT_STRING const char*, va_list) NK_PRINTF_VALIST_FUNC(3);
-    # NK_API void nk_labelfv_colored(struct nk_context*, nk_flags, struct nk_color, NK_PRINTF_FORMAT_STRING const char*, va_list) NK_PRINTF_VALIST_FUNC(4);
-    # NK_API void nk_labelfv_wrap(struct nk_context*, NK_PRINTF_FORMAT_STRING const char*, va_list) NK_PRINTF_VALIST_FUNC(2);
-    # NK_API void nk_labelfv_colored_wrap(struct nk_context*, struct nk_color, NK_PRINTF_FORMAT_STRING const char*, va_list) NK_PRINTF_VALIST_FUNC(3);
-    # NK_API void nk_value_bool(struct nk_context*, const char *prefix, int);
-    # NK_API void nk_value_int(struct nk_context*, const char *prefix, int);
-    # NK_API void nk_value_uint(struct nk_context*, const char *prefix, unsigned int);
-    # NK_API void nk_value_float(struct nk_context*, const char *prefix, float);
-    # NK_API void nk_value_color_byte(struct nk_context*, const char *prefix, struct nk_color);
-    # NK_API void nk_value_color_float(struct nk_context*, const char *prefix, struct nk_color);
-    # NK_API void nk_value_color_hex(struct nk_context*, const char *prefix, struct nk_color);
-
 #[ -------------------------------------------------------------------- ]#
 
 using
@@ -43,46 +25,18 @@ using
 
 {.push inline.}
 
-proc text*(ctx; str; align = TextAlignment.alignLeft)      = nk_text      ctx.addr, cstring str, cint str.len, align
-proc text_wrap*(ctx; str; align = TextAlignment.alignLeft) = nk_text_wrap ctx.addr, cstring str, cint str.len
-proc text*(ctx; str; align = TextAlignment.alignLeft; colour = Colour())      = nk_text_coloured      ctx.addr, cstring str, cint str.len, align, colour
-proc text_wrap*(ctx; str; align = TextAlignment.alignLeft; colour = Colour()) = nk_text_wrap_coloured ctx.addr, cstring str, cint str.len, colour
+proc text*(ctx; str; align = taLeft)      = nk_text      ctx.addr, cstring str, cint str.len, align
+proc text_wrap*(ctx; str; align = taLeft) = nk_text_wrap ctx.addr, cstring str, cint str.len
+proc text*(ctx; str; align = taLeft; colour = Colour())      = nk_text_coloured      ctx.addr, cstring str, cint str.len, align, colour
+proc text_wrap*(ctx; str; align = taLeft; colour = Colour()) = nk_text_wrap_coloured ctx.addr, cstring str, cint str.len, colour
 
-proc label*(ctx; str; align = TextAlignment.alignLeft)      = nk_label      ctx.addr, cstring str, align
-proc label_wrap*(ctx; str; align = TextAlignment.alignLeft) = nk_label_wrap ctx.addr, cstring str
-proc label*(ctx; str; align = TextAlignment.alignLeft; colour: Colour)      = nk_label_coloured      ctx.addr, cstring str, align, colour
-proc label_wrap*(ctx; str; align = TextAlignment.alignLeft; colour: Colour) = nk_label_coloured_wrap ctx.addr, cstring str, colour
+proc label*(ctx; str; align = taLeft)      = nk_label      ctx.addr, cstring str, align
+proc label_wrap*(ctx; str; align = taLeft) = nk_label_wrap ctx.addr, cstring str
+proc label*(ctx; str; align = taLeft; colour: Colour)      = nk_label_coloured      ctx.addr, cstring str, align, colour
+proc label_wrap*(ctx; str; align = taLeft; colour: Colour) = nk_label_coloured_wrap ctx.addr, cstring str, colour
 
 {.pop.}
 
-# enum nk_edit_flags {
-#     NK_EDIT_DEFAULT                 = 0,
-#     NK_EDIT_READ_ONLY               = NK_FLAG(0),
-#     NK_EDIT_AUTO_SELECT             = NK_FLAG(1),
-#     NK_EDIT_SIG_ENTER               = NK_FLAG(2),
-#     NK_EDIT_ALLOW_TAB               = NK_FLAG(3),
-#     NK_EDIT_NO_CURSOR               = NK_FLAG(4),
-#     NK_EDIT_SELECTABLE              = NK_FLAG(5),
-#     NK_EDIT_CLIPBOARD               = NK_FLAG(6),
-#     NK_EDIT_CTRL_ENTER_NEWLINE      = NK_FLAG(7),
-#     NK_EDIT_NO_HORIZONTAL_SCROLL    = NK_FLAG(8),
-#     NK_EDIT_ALWAYS_INSERT_MODE      = NK_FLAG(9),
-#     NK_EDIT_MULTILINE               = NK_FLAG(10),
-#     NK_EDIT_GOTO_END_ON_ACTIVATE    = NK_FLAG(11)
-# };
-# enum nk_edit_types {
-#     NK_EDIT_SIMPLE  = NK_EDIT_ALWAYS_INSERT_MODE,
-#     NK_EDIT_FIELD   = NK_EDIT_SIMPLE|NK_EDIT_SELECTABLE|NK_EDIT_CLIPBOARD,
-#     NK_EDIT_BOX     = NK_EDIT_ALWAYS_INSERT_MODE| NK_EDIT_SELECTABLE| NK_EDIT_MULTILINE|NK_EDIT_ALLOW_TAB|NK_EDIT_CLIPBOARD,
-#     NK_EDIT_EDITOR  = NK_EDIT_SELECTABLE|NK_EDIT_MULTILINE|NK_EDIT_ALLOW_TAB| NK_EDIT_CLIPBOARD
-# };
-# enum nk_edit_events {
-#     NK_EDIT_ACTIVE      = NK_FLAG(0), /* edit widget is currently being modified */
-#     NK_EDIT_INACTIVE    = NK_FLAG(1), /* edit widget is not active and is not being modified */
-#     NK_EDIT_ACTIVATED   = NK_FLAG(2), /* edit widget went from state inactive to state active */
-#     NK_EDIT_DEACTIVATED = NK_FLAG(3), /* edit widget went from state active to state inactive */
-#     NK_EDIT_COMMITED    = NK_FLAG(4) /* edit widget has received an enter and lost focus */
-# };
 # NK_API nk_flags nk_edit_string(struct nk_context*, nk_flags, char *buffer, int *len, int max, nk_plugin_filter);
 # NK_API nk_flags nk_edit_string_zero_terminated(struct nk_context*, nk_flags, char *buffer, int max, nk_plugin_filter);
 # NK_API nk_flags nk_edit_buffer(struct nk_context*, nk_flags, struct nk_text_edit*, nk_plugin_filter);

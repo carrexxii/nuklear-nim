@@ -95,7 +95,7 @@ proc create_vertex_layout*(elems: varargs[tuple[attr: DrawVertexLayoutAttribute;
     result = new_seq_of_cap[DrawVertexLayoutElement] (elems.len + 1)
     for elem in elems:
         result.add DrawVertexLayoutElement(attr: elem.attr, fmt: elem.fmt, offset: uint elem.offset)
-    result.add DrawVertexLayoutElement(attr: vtxLayoutEnd, fmt: fmtEnd, offset: 0)
+    result.add DrawVertexLayoutElement(attr: dvlaEnd, fmt: dvlfEnd, offset: 0)
 
 proc convert*(ctx; cfg: ConvertConfig; cmds, vtxs, idxs: Buffer): ConvertResult {.discardable.} =
     result = ctx.addr.nk_convert(cmds.addr, vtxs.addr, idxs.addr, cfg.addr)

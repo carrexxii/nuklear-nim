@@ -49,81 +49,101 @@ type ConvertResult* = distinct uint32
 ConvertResult.gen_bit_ops convertInvalidParam, convertCmdBufFull, convertVtxBufFull, convertElemBufFull
 const convertSuccess* = ConvertResult 0
 
-const # This is for `PanelSet`
+type EditFlag* = distinct uint32
+EditFlag.gen_bit_ops(
+    editReadOnly, editAutoSelect, editSigEnter, editAllowTab,
+    editNoCursor, editSelectable, editClipboard, editCtrlEnterNewline,
+    editNoHorizontalScroll, editAlwaysInsertMode, editMultiline, editGotoEndOnActivate,
+)
+const editDefault* = EditFlag 0
+
+type EditEventFlag* = distinct uint32
+EditEventFlag.gen_bit_ops editActive, editInactive, editActivated, editDeactivated, editCommited
+
+#[ -------------------------------------------------------------------- ]#
+
+const
+    # This is for `PanelSet`
     PSetNonBlock = panelContextual or panelCombo or panelMenu or panelTooltip
     PSetPopup    = PSetNonBlock or panelPopup
     PSetSub      = PSetPopup or panelGroup
 
+    # This is for `EditKind`
+    EKindSimple = editAlwaysInsertMode
+    EKindField  = EKindSimple or editSelectable or editClipboard
+    EKindBox    = editAlwaysInsertMode or editSelectable or editMultiline or editAllowTab or editClipboard
+    EKindEditor = editSelectable or editMultiline or editAllowTab or editClipboard
+
 type
     Heading* {.size: sizeof(cint).} = enum
-        headingUp
-        headingRight
-        headingDown
-        headingLeft
+        hUp
+        hRight
+        hDown
+        hLeft
 
     ButtonBehaviour* {.size: sizeof(cint).} = enum
-        btnDefault
-        btnRepeater
+        bbDefault
+        bbRepeater
 
     Modify* {.size: sizeof(cint).} = enum
-        modifyFixed
-        modifyModifiable
+        mFixed
+        mModifiable
 
     Orientation* {.size: sizeof(cint).} = enum
-        orientVertical
-        orientHorizontal
+        oVertical
+        oHorizontal
 
     CollapseState* {.size: sizeof(cint).} = enum
-        collapseMinimized
-        collapseMaximized
+        csMinimized
+        csMaximized
 
     ShowState* {.size: sizeof(cint).} = enum
-        showHidden
-        showShown
+        ssHidden
+        ssShown
 
     ChartEvent* {.size: sizeof(cint).} = enum
-        chartHovering = 0x01
-        chartClicked  = 0x02
+        ceHovering = 0x01
+        ceClicked  = 0x02
 
     ColourFormat* {.size: sizeof(cint).} = enum
-        colourRgb
-        colourRgba
+        cfRgb
+        cfRgba
 
     PopupKind* {.size: sizeof(cint).} = enum
-        popupStatic
-        popupDynamic
+        pkStatic
+        pkDynamic
 
     LayoutFormat* {.size: sizeof(cint).} = enum
-        layoutDynamic
-        layoutStatic
+        lfDynamic
+        lfStatic
 
     SymbolKind* {.size: sizeof(cint).} = enum
-        symNone
-        symX
-        symUnderscore
-        symCircleSolid
-        symCircleOutline
-        symRectSolid
-        symRectOutline
-        symTriUp
-        symTriDown
-        symTriLeft
-        symTriRight
-        symPlus
-        symMinus
-        symTriUpOutline
-        symTriDownOutline
-        symTriLeftOutline
-        symTriRightOutline
+        skNone
+        skX
+        skUnderscore
+        skCircleSolid
+        skCircleOutline
+        skRectSolid
+        skRectOutline
+        skTriUp
+        skTriDown
+        skTriLeft
+        skTriRight
+        skPlus
+        skMinus
+        skTriUpOutline
+        skTriDownOutline
+        skTriLeftOutline
+        skTriRightOutline
 
     AllocationKind* {.size: sizeof(cint).} = enum
-        allocFixed
-        allocDynamic
+        akFixed
+        akDynamic
 
     BufferAllocationKind* {.size: sizeof(cint).} = enum
-        bufAllocFront
-        bufAllocBack
-        bufAllocMax
+        bakFront
+        bakBack
+        bakMax
 
     #[ ---------------------------------------------------------------- ]#
 
@@ -132,225 +152,231 @@ type
         aaOn
 
     DrawVertexLayoutAttribute* {.size: sizeof(cint).} = enum
-        vtxPosition
-        vtxColour
-        vtxTexcoord
-        vtxLayoutEnd
+        dvlaPosition
+        dvlaColour
+        dvlaTexcoord
+        dvlaEnd
 
     DrawVertexLayoutFormat* {.size: sizeof(cint).} = enum
-        fmtSchar
-        fmtSshort
-        fmtSint
-        fmtUchar
-        fmtUshort
-        fmtUint
-        fmtFloat
-        fmtDouble
+        dvlfSchar
+        dvlfSshort
+        dvlfSint
+        dvlfUchar
+        dvlfUshort
+        dvlfUint
+        dvlfFloat
+        dvlfDouble
 
-        fmtR8G8B8
-        fmtR16G15B16
-        fmtR32G32B32
-        fmtR8G8B8A8
-        fmtB8G8R8A8
-        fmtR16G15B16A16
-        fmtR32G32B32A32
-        fmtR32G32B32A32Float
-        fmtR32G32B32A32Double
-        fmtRgb32
-        fmtRgba32
+        dvlfR8G8B8
+        dvlfR16G15B16
+        dvlfR32G32B32
+        dvlfR8G8B8A8
+        dvlfB8G8R8A8
+        dvlfR16G15B16A16
+        dvlfR32G32B32A32
+        dvlfR32G32B32A32Float
+        dvlfR32G32B32A32Double
+        dvlfRgb32
+        dvlfRgba32
 
-        fmtEnd
+        dvlfEnd
 
     CommandKind* {.size: sizeof(cint).} = enum
-        cmdNop
-        cmdScissor
-        cmdLine
-        cmdCurve
-        cmdRect
-        cmdRectFilled
-        cmdRectMultiColour
-        cmdCircle
-        cmdCircleFilled
-        cmdArc
-        cmdArcFilled
-        cmdTriangle
-        cmdTriangleFilled
-        cmdPolygon
-        cmdPolygonFilled
-        cmdPolyline
-        cmdText
-        cmdImage
-        cmdCustom
+        ckNop
+        ckScissor
+        ckLine
+        ckCurve
+        ckRect
+        ckRectFilled
+        ckRectMultiColour
+        ckCircle
+        ckCircleFilled
+        ckArc
+        ckArcFilled
+        ckTriangle
+        ckTriangleFilled
+        ckPolygon
+        ckPolygonFilled
+        ckPolyline
+        ckText
+        ckImage
+        ckCustom
 
     CommandClipping* {.size: sizeof(cint).} = enum
-        clippingOff = false
-        clippingOn  = true
+        ccOff = false
+        ccOn  = true
 
     DrawListStroke* {.size: sizeof(cint).} = enum
-        strokeOpen   = false
-        strokeClosed = true
+        dlsOpen   = false
+        dlsClosed = true
 
     #[ ---------------------------------------------------------------- ]#
 
     FontAtlasFormat* {.size: sizeof(cint).} = enum
-        fontAtlasAlpha8
-        fontAtlasRgba32
+        fafAlpha8
+        fafRgba32
 
     FontCoordKind* {.size: sizeof(cint).} = enum
-        fontCoordUv
-        fontCoordPixel
-    
+        fckUv
+        fckPixel
+
     #[ ---------------------------------------------------------------- ]#
 
     KeyKind* {.size: sizeof(cint).} = enum
-        keyNone
-        keyShift
-        keyCtrl
-        keyDel
-        keyEnter
-        keyTab
-        keyBackspace
-        keyCopy
-        keyCut
-        keyPaste
-        keyUp
-        keyDown
-        keyLeft
-        keyRight
-        keyTextInsertMode
-        keyTextReplaceMode
-        keyTextResetMode
-        keyTextLineStart
-        keyTextLineEnd
-        keyTextStart
-        keyTextEnd
-        keyTextUndo
-        keyTextRedo
-        keyTextSelectAll
-        keyTextWordLeft
-        keyTextWordRight
-        keyScrollStart
-        keyScrollEnd
-        keyScrollDown
-        keyScrollUp
+        kkNone
+        kkShift
+        kkCtrl
+        kkDel
+        kkEnter
+        kkTab
+        kkBackspace
+        kkCopy
+        kkCut
+        kkPaste
+        kkUp
+        kkDown
+        kkLeft
+        kkRight
+        kkTextInsertMode
+        kkTextReplaceMode
+        kkTextResetMode
+        kkTextLineStart
+        kkTextLineEnd
+        kkTextStart
+        kkTextEnd
+        kkTextUndo
+        kkTextRedo
+        kkTextSelectAll
+        kkTextWordLeft
+        kkTextWordRight
+        kkScrollStart
+        kkScrollEnd
+        kkScrollDown
+        kkScrollUp
 
     Button* {.size: sizeof(cint).} = enum
-        btnLeft
-        btnMiddle
-        btnRight
-        btnDouble
+        bLeft
+        bMiddle
+        bRight
+        bDouble
 
     #[ ---------------------------------------------------------------- ]#
 
     WidgetAlignment* {.size: sizeof(cint).} = enum
-        alignLeft    = widgetAlignMiddle or widgetAlignLeft
-        alignCentred = widgetAlignMiddle or widgetAlignCentred
-        alignRight   = widgetAlignMiddle or widgetAlignRight
+        waLeft    = widgetAlignMiddle or widgetAlignLeft
+        waCentred = widgetAlignMiddle or widgetAlignCentred
+        waRight   = widgetAlignMiddle or widgetAlignRight
 
     #[ ---------------------------------------------------------------- ]#
 
     StyleColours* {.size: sizeof(cint).} = enum
-        colourText
-        colourWin
-        colourHeader
-        colourBorder
-        colourBtn
-        colourBtnHover
-        colourBtnActive
-        colourToggle
-        colourToggleHover
-        colourToggleCursor
-        colourSelect
-        colourSelectActive
-        colourSlider
-        colourSliderCursor
-        colourSliderCursorHover
-        colourSliderCursorActive
-        colourProp
-        colourEdit
-        colourEditCursor
-        colourCombo
-        colourChart
-        colourChartColour
-        colourChartColourHighlight
-        colourScrollbar
-        colourScrollbarCursor
-        colourScrollbarCursorHover
-        colourScrollbarCursorActive
-        colourTabHeader
+        scText
+        scWin
+        scHeader
+        scBorder
+        scBtn
+        scBtnHover
+        scBtnActive
+        scToggle
+        scToggleHover
+        scToggleCursor
+        scSelect
+        scSelectActive
+        scSlider
+        scSliderCursor
+        scSliderCursorHover
+        scSliderCursorActive
+        scProp
+        scEdit
+        scEditCursor
+        scCombo
+        scChart
+        scChartColour
+        scChartColourHighlight
+        scScrollbar
+        scScrollbarCursor
+        scScrollbarCursorHover
+        scScrollbarCursorActive
+        scTabHeader
 
     StyleCursor* {.size: sizeof(cint).} = enum
-        cursorArrow
-        cursorText
-        cursorMove
-        cursorResizeVertical
-        cursorResizeHorizontal
-        cursorResizeTopLeftDownRight
-        cursorResizeTopRightDownLeft
+        scArrow
+        scText
+        scMove
+        scResizeVertical
+        scResizeHorizontal
+        scResizeTopLeftDownRight
+        scResizeTopRightDownLeft
 
     StyleItemKind* {.size: sizeof(cint).} = enum
-        itemColour
-        itemImage
-        itemNineSlice
+        sikColour
+        sikImage
+        sikNineSlice
 
     StyleHeaderAlign* {.size: sizeof(cint).} = enum
-        alignLeft
-        alignRight
+        shaLeft
+        shaRight
 
     #[ ---------------------------------------------------------------- ]#
 
     TextAlignment* {.size: sizeof(cint).} = enum
-        alignLeft    = textAlignMiddle or textAlignLeft
-        alignCentred = textAlignMiddle or textAlignCentred
-        alignRight   = textAlignMiddle or textAlignRight
+        taLeft    = textAlignMiddle or textAlignLeft
+        taCentred = textAlignMiddle or textAlignCentred
+        taRight   = textAlignMiddle or textAlignRight
 
     TextEditKind* {.size: sizeof(cint).} = enum
-        editSingleLine
-        editMultiline
+        ekSingleLine
+        ekMultiline
 
     TextEditMode* {.size: sizeof(cint).} = enum
-        modeView
-        modeInsert
-        modeReplace
+        temView
+        temInsert
+        temReplace
 
     #[ ---------------------------------------------------------------- ]#
 
     TreeKind* {.size: sizeof(cint).} = enum
-        treeNode
-        treeTab
+        tkNode
+        tkTab
 
     #[ ---------------------------------------------------------------- ]#
 
     WidgetLayoutState* {.size: sizeof(cint).} = enum
-        layoutInvalid
-        layoutValid
-        layoutRom
-        layoutDisabled
+        wlsInvalid
+        wlsValid
+        wlsRom
+        wlsDisabled
 
     ChartKind* {.size: sizeof(cint).} = enum
-        chartLine
-        chartColumn
+        ckLine
+        ckColumn
 
     #[ ---------------------------------------------------------------- ]#
 
     PanelSet* {.size: sizeof(cint).} = enum
-        panelSetNonBlock = PSetNonBlock
-        panelSetPopup    = PSetPopup
-        panelSetSub      = PSetSub
+        psNonBlock = PSetNonBlock
+        psPopup    = PSetPopup
+        psSub      = PSetSub
 
     PanelRowLayout* {.size: sizeof(cint).} = enum
-        layoutDynamicFixed
-        layoutDynamicRow
-        layoutDynamicFree
-        layoutDynamic
-        layoutStaticFixed
-        layoutStaticRow
-        layoutStaticFree
-        layoutStatic
-        layoutTemplate
+        prlDynamicFixed
+        prlDynamicRow
+        prlDynamicFree
+        prlDynamic
+        prlStaticFixed
+        prlStaticRow
+        prlStaticFree
+        prlStatic
+        prlTemplate
 
-const FmtColourStart* = fmtR8G8B8
-const FmtColourEnd*   = fmtRgba32
+    EditKind* {.size: sizeof(cint).} = enum
+        ekSimple = EKindSimple
+        ekField  = EKindField
+        ekBox    = EKindBox
+        ekEditor = EKindEditor
+
+const FmtColourStart = dvlfR8G8B8
+const FmtColourEnd   = dvlfRgba32
 
 when defined NkUintDrawIndex:
     type DrawIndex* = cuint
@@ -436,7 +462,7 @@ type
         free*     : PluginFree
 
     Buffer* = object
-        markers*    : array[bufAllocMax, BufferMarker]
+        markers*    : array[bakMax, BufferMarker]
         pool*       : Allocator
         kind*       : AllocationKind
         mem*        : Memory
@@ -1401,3 +1427,14 @@ type
         x*, y* : cfloat
         w*, h* : cfloat
         offset*: Scroll
+
+#[ -------------------------------------------------------------------- ]#
+
+
+proc nk_free*(ctx: ptr Context)                   {.importc: "nk_free"              .}
+proc nk_buffer_free*(buf: ptr Buffer)             {.importc: "nk_buffer_free"       .}
+proc nk_font_atlas_cleanup*(atlas: ptr FontAtlas) {.importc: "nk_font_atlas_cleanup".}
+
+proc `=destroy`*(ctx: Context)     = nk_free ctx.addr
+proc `=destroy`*(buf: Buffer)      = nk_buffer_free buf.addr
+proc `=destroy`*(atlas: FontAtlas) = nk_font_atlas_cleanup atlas.addr

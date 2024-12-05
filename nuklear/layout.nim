@@ -65,7 +65,7 @@ template row_dynamic*(ctx; cols: SomeInteger; h: SomeNumber; body: untyped) =
         body
 template row_custom*(ctx: var Context; cols: SomeInteger; h: SomeNumber; body: untyped) =
     with ctx:
-        begin layoutStatic, cols, h
+        begin lfStatic, cols, h
         body
         end_row
 

@@ -31,3 +31,22 @@ proc nk_input_is_mouse_released*(input; btn: Button): bool                      
 proc nk_input_is_key_pressed*(input; key: KeyKind): bool                                {.importc: "nk_input_is_key_pressed"                .}
 proc nk_input_is_key_released*(input; key: KeyKind): bool                               {.importc: "nk_input_is_key_released"               .}
 proc nk_input_is_key_down*(input; key: KeyKind): bool                                   {.importc: "nk_input_is_key_down"                   .}
+
+#[ -------------------------------------------------------------------- ]#
+
+using ctx: var Context
+
+{.push inline.}
+
+proc begin_input*(ctx) = nk_input_begin ctx.addr
+proc end_input*(ctx)   = nk_input_end   ctx.addr
+proc input_motion*(ctx; x: SomeNumber; y: SomeNumber) = nk_input_motion  ctx.addr, cint x, cint y
+proc input_key*(ctx; key: KeyKind; down: bool)        = nk_input_key     ctx.addr, key, down
+proc input_scroll*(ctx; x: SomeNumber; y: SomeNumber) = nk_input_scroll  ctx.addr, Vec2(x: cfloat x, y: cfloat y)
+proc input_char*(ctx; c: char)                        = nk_input_char    ctx.addr, c
+proc input_glyph*(ctx; c: Glyph)                      = nk_input_glyph   ctx.addr, c
+proc input_unicode*(ctx; c: Rune)                     = nk_input_unicode ctx.addr, c
+proc input_button*(ctx; btn: Button; x: SomeNumber; y: SomeNumber; down: bool) =
+    nk_input_button ctx.addr, btn, cint x, cint y, down
+
+{.pop.}
