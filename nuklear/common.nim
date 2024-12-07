@@ -9,10 +9,10 @@ template nk_assert*(cond, body) =
 converter `pointer -> Handle`*(p: pointer): Handle = result.p = p
 converter `Handle -> bool`*(h: Handle): bool = h.p != nil
 
-proc nim_alloc(_: Handle; old: pointer; sz: uint): pointer {.cdecl.} =
+proc nim_alloc(_: Handle; old: pointer; sz: uint): pointer =
     old.realloc sz
 
-proc nim_free(_: Handle; old: pointer) {.cdecl.} =
+proc nim_free(_: Handle; old: pointer) =
     discard old.realloc 0
 
 const NimAllocator* = Allocator(

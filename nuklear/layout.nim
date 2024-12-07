@@ -37,7 +37,7 @@ using ctx: var Context
 
 {.push inline.}
 
-proc `min_row_height=`*(ctx; h: float32) = nk_layout_set_min_row_height ctx.addr, cfloat h
+proc `min_row_height=`*(ctx; h: SomeNumber) = nk_layout_set_min_row_height ctx.addr, cfloat h
 
 proc reset_min_row_height*(ctx) = nk_layout_reset_min_row_height ctx.addr
 

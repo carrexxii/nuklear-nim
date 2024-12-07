@@ -51,8 +51,8 @@ const convertSuccess* = ConvertResult 0
 
 type EditFlag* = distinct uint32
 EditFlag.gen_bit_ops(
-    editReadOnly, editAutoSelect, editSigEnter, editAllowTab,
-    editNoCursor, editSelectable, editClipboard, editCtrlEnterNewline,
+    editReadOnly          , editAutoSelect      , editSigEnter , editAllowTab,
+    editNoCursor          , editSelectable      , editClipboard, editCtrlEnterNewline,
     editNoHorizontalScroll, editAlwaysInsertMode, editMultiline, editGotoEndOnActivate,
 )
 const editDefault* = EditFlag 0
@@ -219,7 +219,7 @@ type
     FontCoordKind* {.size: sizeof(cint).} = enum
         fckUv
         fckPixel
-
+    
     #[ ---------------------------------------------------------------- ]#
 
     KeyKind* {.size: sizeof(cint).} = enum
@@ -434,11 +434,11 @@ type
         buf*: Buffer
         len*: int32
 
-    PluginAlloc*  = proc(handle: Handle; old: pointer; sz: uint): pointer {.cdecl.}
-    PluginFree*   = proc(handle: Handle; old: pointer) {.cdecl.}
-    PluginFilter* = proc(text_edit: pointer; unicode: Rune): bool {.cdecl.}
-    PluginPaste*  = proc(handle: Handle; text_edit: pointer) {.cdecl.}
-    PluginCopy*   = proc(handle: Handle; str: cstring; len: cint) {.cdecl.}
+    PluginAlloc*  = proc(handle: Handle; old: pointer; sz: uint): pointer {.nimcall.}
+    PluginFree*   = proc(handle: Handle; old: pointer) {.nimcall.}
+    PluginFilter* = proc(text_edit: ptr TextEdit; unicode: Rune): bool {.nimcall.}
+    PluginPaste*  = proc(handle: Handle; text_edit: ptr TextEdit) {.nimcall.}
+    PluginCopy*   = proc(handle: Handle; str: cstring; len: cint) {.nimcall.}
 
     MemoryStatus* = object
         mem*    : pointer
@@ -537,7 +537,7 @@ type
 
     #[ ---------------------------------------------------------------- ]#
 
-    CommandCustomCallback* = proc(canvas: pointer; x, y: cshort; w, h: cushort; cb_data: Handle) {.cdecl.}
+    CommandCustomCallback* = proc(canvas: pointer; x, y: cshort; w, h: cushort; cb_data: Handle)
 
     DrawNullTexture* = object
         tex*: Handle
@@ -1430,7 +1430,6 @@ type
 
 #[ -------------------------------------------------------------------- ]#
 
-
 proc nk_free*(ctx: ptr Context)                   {.importc: "nk_free"              .}
 proc nk_buffer_free*(buf: ptr Buffer)             {.importc: "nk_buffer_free"       .}
 proc nk_font_atlas_cleanup*(atlas: ptr FontAtlas) {.importc: "nk_font_atlas_cleanup".}
@@ -1438,3 +1437,5 @@ proc nk_font_atlas_cleanup*(atlas: ptr FontAtlas) {.importc: "nk_font_atlas_clea
 proc `=destroy`*(ctx: Context)     = nk_free ctx.addr
 proc `=destroy`*(buf: Buffer)      = nk_buffer_free buf.addr
 proc `=destroy`*(atlas: FontAtlas) = nk_font_atlas_cleanup atlas.addr
+
+converter `EditKind -> EditFlag`*(flag: EditKind): EditFlag = cast[EditFlag](flag)

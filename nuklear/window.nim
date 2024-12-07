@@ -59,7 +59,7 @@ using ctx: var Context
 {.push inline.}
 
 proc begin*(ctx; bounds: Rect; flags: PanelFlag; name, title = ""): bool {.discardable.} =
-    if title == "":
+    if title.len > 0:
         result = nk_begin(ctx.addr, cstring name, bounds, flags)
     else:
         result = nk_begin_titled(ctx.addr, cstring name, cstring title, bounds, flags)
@@ -67,5 +67,9 @@ proc begin*(ctx; bounds: Rect; flags: PanelFlag; name, title = ""): bool {.disca
 
 proc `end`*(ctx) = 
     nk_end ctx.addr
+
+proc hr*(ctx; w: SomeNumber; h: SomeNumber = 1.5; colour = Colour(r: 112, g: 112, b: 112, a: 127); rounding = false) =
+    ctx.row 1, h, w
+    nk_rule_horizontal ctx.addr, colour, rounding
 
 {.pop.}
