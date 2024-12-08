@@ -1,12 +1,13 @@
-import common
+import std/[macros, strutils], common
 
 using
-    ctx        : ptr Context
-    text, label: cstring
-    sym        : SymbolKind
-    img        : Image
-    align      : TextAlignment
-    bnt_style  : ptr StyleButton
+    ctx      : ptr Context
+    text     : cstring
+    label    : cstring
+    sym      : SymbolKind
+    img      : Image
+    align    : TextAlignment
+    bnt_style: ptr StyleButton
 
 proc nk_widget*(rect: ptr Rect; ctx): WidgetLayoutState                    {.importc: "nk_widget"                     .}
 proc nk_widget_fitting*(rect: ptr Rect; ctx; pos: Vec2): WidgetLayoutState {.importc: "nk_widget_fitting"             .}
@@ -51,35 +52,116 @@ proc nk_option_text_align*(ctx; text; len: cint; is_active: bool; widget_align, 
 
 proc nk_slider_float*(ctx; min: cfloat; val: ptr cfloat; max, step: cfloat): bool {.importc: "nk_slider_float".}
 
+proc nk_menubar_begin*(ctx)                                                            {.importc: "nk_menubar_begin"          .}
+proc nk_menubar_end*(ctx)                                                              {.importc: "nk_menubar_end"            .}
+proc nk_menu_begin_text*(ctx; text; text_len: cint; align; sz: Vec2): bool             {.importc: "nk_menu_begin_text"        .}
+proc nk_menu_begin_label*(ctx; text; align; sz: Vec2): bool                            {.importc: "nk_menu_begin_label"       .}
+proc nk_menu_begin_image*(ctx; text; img; sz: Vec2): bool                              {.importc: "nk_menu_begin_image"       .}
+proc nk_menu_begin_image_text*(ctx; text; text_len: cint; align; img; sz: Vec2): bool  {.importc: "nk_menu_begin_image_text"  .}
+proc nk_menu_begin_image_label*(ctx; text; align; img; sz: Vec2): bool                 {.importc: "nk_menu_begin_image_label" .}
+proc nk_menu_begin_symbol*(ctx; text; sym; sz: Vec2): bool                             {.importc: "nk_menu_begin_symbol"      .}
+proc nk_menu_begin_symbol_text*(ctx; text; text_len: cint; align; sym; sz: Vec2): bool {.importc: "nk_menu_begin_symbol_text" .}
+proc nk_menu_begin_symbol_label*(ctx; text; align; sym; sz: Vec2): bool                {.importc: "nk_menu_begin_symbol_label".}
+proc nk_menu_item_text*(ctx; text; text_len: cint; align): bool                        {.importc: "nk_menu_item_text"         .}
+proc nk_menu_item_label*(ctx; text; align): bool                                       {.importc: "nk_menu_item_label"        .}
+proc nk_menu_item_image_label*(ctx; img; text; align): bool                            {.importc: "nk_menu_item_image_label"  .}
+proc nk_menu_item_image_text*(ctx; img; text; text_len: cint; align): bool             {.importc: "nk_menu_item_image_text"   .}
+proc nk_menu_item_symbol_text*(ctx; sym; text; text_len: cint; align): bool            {.importc: "nk_menu_item_symbol_text"  .}
+proc nk_menu_item_symbol_label*(ctx; sym; text; align): bool                           {.importc: "nk_menu_item_symbol_label" .}
+proc nk_menu_close*(ctx)                                                               {.importc: "nk_menu_close"             .}
+proc nk_menu_end*(ctx)                                                                 {.importc: "nk_menu_end"               .}
+
 #[ -------------------------------------------------------------------- ]#
 
-using ctx: var Context
+using
+    ctx : var Context
+    text: string
 
 {.push inline.}
 
 proc slider*(ctx; val: ptr float32; min, max, step: float32): bool {.discardable.} =
     nk_slider_float(ctx.addr, cfloat min, val, cfloat max, cfloat step)
 
-proc button*(ctx; text: string): bool    = nk_button_text   ctx.addr, cstring text, cint text.len
-proc button*(ctx; colour: Colour): bool  = nk_button_colour ctx.addr, colour
-proc button*(ctx; sym: SymbolKind): bool = nk_button_symbol ctx.addr, sym
-proc button*(ctx; img: Image): bool      = nk_button_image  ctx.addr, img
-proc button*(ctx; text: string; sym: SymbolKind; align = taLeft): bool =
-    nk_button_symbol_text ctx.addr, sym, cstring text, cint text.len, align
-proc button*(ctx; text: string; img: Image; align = taLeft): bool =
-    nk_button_image_text ctx.addr, img, cstring text, cint text.len, align
+proc button*(ctx; text): bool                      = nk_button_text   ctx.addr, cstring text, cint text.len
+proc button*(ctx; colour: Colour): bool            = nk_button_colour ctx.addr, colour
+proc button*(ctx; sym): bool                       = nk_button_symbol ctx.addr, sym
+proc button*(ctx; img): bool                       = nk_button_image  ctx.addr, img
+proc button*(ctx; text; sym; align = taLeft): bool = nk_button_symbol_text ctx.addr, sym, cstring text, cint text.len, align
+proc button*(ctx; text; img; align = taLeft): bool = nk_button_image_text  ctx.addr, img, cstring text, cint text.len, align
 
-proc `behaviour=`*(ctx; behave: ButtonBehaviour) =
-    nk_button_set_behavior ctx.addr, behave
-proc push*(ctx; behave: ButtonBehaviour): bool {.discardable.} =
-    nk_button_push_behavior ctx.addr, behave
-proc pop_behaviour*(ctx): bool {.discardable.} =
-    nk_button_pop_behavior ctx.addr
+proc `behaviour=`*(ctx; behave: ButtonBehaviour) = nk_button_set_behavior ctx.addr, behave
+proc push*(ctx; behave: ButtonBehaviour): bool {.discardable.} = nk_button_push_behavior ctx.addr, behave
+proc pop_behaviour*(ctx): bool                 {.discardable.} = nk_button_pop_behavior  ctx.addr
 
-proc option*(ctx; text: string; is_active: bool): bool =
+proc option*(ctx; text; is_active: bool): bool =
     nk_option_text ctx.addr, cstring text, cint text.len, is_active
-proc option*(ctx; text: string; is_active: bool; widget_align, text_align: TextAlignment): bool =
+proc option*(ctx; text; is_active: bool; widget_align, text_align: TextAlignment): bool =
     nk_option_text_align ctx.addr, cstring text, cint text.len, is_active, widget_align, text_align
+
+proc begin_menubar*(ctx) = nk_menubar_begin ctx.addr
+proc end_menubar*(ctx)   = nk_menubar_end   ctx.addr
+
+proc begin_menu*(ctx; text; sz: Vec2; align = taLeft): bool      = nk_menu_begin_text        ctx.addr, cstring text, cint text.len, align, sz
+proc begin_menu*(ctx; text; img; sz: Vec2; align = taLeft): bool = nk_menu_begin_image_text  ctx.addr, cstring text, cint text.len, align, img, sz
+proc begin_menu*(ctx; text; sym; sz: Vec2; align = taLeft): bool = nk_menu_begin_symbol_text ctx.addr, cstring text, cint text.len, align, sym, sz
+
+proc menu_item*(ctx; text; align = taLeft): bool      = nk_menu_item_text        ctx.addr     , cstring text, cint text.len, align
+proc menu_item*(ctx; text; img; align = taLeft): bool = nk_menu_item_image_text  ctx.addr, img, cstring text, cint text.len, align
+proc menu_item*(ctx; text; sym; align = taLeft): bool = nk_menu_item_symbol_text ctx.addr, sym, cstring text, cint text.len, align
+
+proc close_menu*(ctx) = nk_menu_close ctx.addr
+proc end_menu*(ctx)   = nk_menu_end   ctx.addr
+
+proc menu*(ctx; text: string; sz: (SomeNumber, SomeNumber); align = taLeft; items: varargs[string]): bool {.discardable.} =
+    ctx.begin_menu text, Vec2(x: cfloat sz[0], y: cfloat sz[1]), align
+    for item in items:
+        ctx.menu_item item, align
+    ctx.end_menu
+
+# TODO: add button option
+macro menubar*(ctx; h: SomeNumber; menu_sz: (SomeNumber, SomeNumber); menus: untyped): typed =
+    result = new_nim_node nnkStmtList
+    let menus_len = menus.len
+    result.add quote do:
+        `ctx`.begin_menubar()
+        `ctx`.row `menus_len`, `h`
+
+    let mw = menu_sz[0]
+    let mh = menu_sz[1]
+    for menu in menus:
+        let name     = menu[0]
+        let contents = menu[1]
+        let menu_len = contents.len
+
+        name.expect_kind nnkStrLit
+
+        # Build the list of menu items first
+        var items = new_nim_node nnkStmtList
+        for item in contents:
+            let text = item[0]
+            if item.len == 2:
+                let inner = item[1]
+                items.add quote do:
+                    if `ctx`.menu_item `text`:
+                        `inner`
+            elif item.len == 3:
+                let extra = item[1] # Symbol/Image
+                let inner = item[2]
+                items.add quote do:
+                    if `ctx`.menu_item(`text`, `extra`):
+                        `inner`
+            else:
+                error "Menu item elements should be (string, <body>) or (string, Image/SymbolKind, <body>)", item
+
+        result.add quote do:
+            let sz = Vec2(x: cfloat `mw`, y: cfloat (`menu_len` + 1)*`mh`)
+            if `ctx`.begin_menu(`name`, sz):
+                `ctx`.row 1, `mh`
+                `items`
+                `ctx`.end_menu()
+
+    result.add quote do:
+        `ctx`.end_menubar()
 
 {.pop.}
 
@@ -184,23 +266,3 @@ proc option*(ctx; text: string; is_active: bool; widget_align, text_align: TextA
 # #endif
 # NK_API nk_bool nk_tooltip_begin(struct nk_context*, float width);
 # NK_API void nk_tooltip_end(struct nk_context*);
-
-# Menu
-# NK_API void nk_menubar_begin(struct nk_context*);
-# NK_API void nk_menubar_end(struct nk_context*);
-# NK_API nk_bool nk_menu_begin_text(struct nk_context*, const char* title, int title_len, nk_flags align, struct nk_vec2 size);
-# NK_API nk_bool nk_menu_begin_label(struct nk_context*, const char*, nk_flags align, struct nk_vec2 size);
-# NK_API nk_bool nk_menu_begin_image(struct nk_context*, const char*, struct nk_image, struct nk_vec2 size);
-# NK_API nk_bool nk_menu_begin_image_text(struct nk_context*, const char*, int,nk_flags align,struct nk_image, struct nk_vec2 size);
-# NK_API nk_bool nk_menu_begin_image_label(struct nk_context*, const char*, nk_flags align,struct nk_image, struct nk_vec2 size);
-# NK_API nk_bool nk_menu_begin_symbol(struct nk_context*, const char*, enum nk_symbol_type, struct nk_vec2 size);
-# NK_API nk_bool nk_menu_begin_symbol_text(struct nk_context*, const char*, int,nk_flags align,enum nk_symbol_type, struct nk_vec2 size);
-# NK_API nk_bool nk_menu_begin_symbol_label(struct nk_context*, const char*, nk_flags align,enum nk_symbol_type, struct nk_vec2 size);
-# NK_API nk_bool nk_menu_item_text(struct nk_context*, const char*, int,nk_flags align);
-# NK_API nk_bool nk_menu_item_label(struct nk_context*, const char*, nk_flags alignment);
-# NK_API nk_bool nk_menu_item_image_label(struct nk_context*, struct nk_image, const char*, nk_flags alignment);
-# NK_API nk_bool nk_menu_item_image_text(struct nk_context*, struct nk_image, const char*, int len, nk_flags alignment);
-# NK_API nk_bool nk_menu_item_symbol_text(struct nk_context*, enum nk_symbol_type, const char*, int, nk_flags alignment);
-# NK_API nk_bool nk_menu_item_symbol_label(struct nk_context*, enum nk_symbol_type, const char*, nk_flags alignment);
-# NK_API void nk_menu_close(struct nk_context*);
-# NK_API void nk_menu_end(struct nk_context*);
