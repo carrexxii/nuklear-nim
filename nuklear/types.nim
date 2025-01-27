@@ -1,123 +1,123 @@
 import bitgen, defines
 
-type WidgetAlign* = distinct uint32
-WidgetAlign.gen_bit_ops(
-    widgetAlignLeft, widgetAlignCentred, widgetAlignRight, widgetAlignTop,
-    widgetAlignMiddle, widgetAlignBottom,
+type WidgetAlignFlag* = distinct uint32
+WidgetAlignFlag.gen_bit_ops(
+    wafLeft, wafCentred, wafRight, wafTop,
+    wafMiddle, wafBottom,
 )
 
-type WidgetState* = distinct uint32
-WidgetState.gen_bit_ops(
-    stateModified, stateInactive, stateEntered, stateHover,
-    stateActivated, stateLeft,
+type WidgetStateFlag* = distinct uint32
+WidgetStateFlag.gen_bit_ops(
+    wsfModified , wsfInactive, wsfEntered, wsfHover,
+    wsfActivated, wsfLeft,
 )
-const stateHovered* = stateHover or stateModified
-const stateActive*  = stateActivated or stateModified
+const wsfHovered* = wsfHover or wsfModified
+const wsfActive*  = wsfActivated or wsfModified
 
-type TextAlign* = distinct uint32
-TextAlign.gen_bit_ops(
-    textAlignLeft, textAlignCentred, textAlignRight, textAlignTop,
-    textAlignMiddle, textAlignBottom,
+type TextAlignFlag* = distinct uint32
+TextAlignFlag.gen_bit_ops(
+    tafLeft, tafCentred, tafRight, tafTop,
+    tafMiddle, tafBottom,
 )
 
 type PanelFlag* = distinct uint32
 PanelFlag.gen_bit_ops(
-    winBorder     , winMovable    , winScalable, winClosable,
-    winMinimizable, winNoScrollbar, winTitle   , winScrollAutoHide,
-    winBackground , winScaleLeft  , winNoInput ,
+    pfBorder     , pfMovable    , pfScalable, pfClosable,
+    pfMinimisable, pfNoScrollbar, pfTitle   , pfScrollAutoHide,
+    pfBackground , pfScaleLeft  , pfNoInput ,
 )
 
 type WindowFlag* = distinct uint32
 WindowFlag.gen_bit_ops(
     _, _, _, _,
     _, _, _, _,
-    _, _, _, winPrivate,
-    winRom, winHidden, winClosed, winMinimized,
-    winRemoveRom,
+    _, _, _, wfPrivate,
+    wfRom, wfHidden, wfClosed, wfMinimised,
+    wfRemoveRom,
 )
-const winDynamic*        = winPrivate
-const winNotInteractive* = winRom or (WindowFlag winNoInput)
+const wfNone*           = WindowFlag 0
+const wfDynamic*        = wfPrivate
+const wfNotInteractive* = wfRom or (WindowFlag pfNoInput)
 
 type PanelKindFlag* = distinct uint32
 PanelKindFlag.gen_bit_ops(
-    panelWindow    , panelGroup, panelPopup, _,
-    panelContextual, panelCombo, panelMenu , panelTooltip,
+    pkfWindow    , pkfGroup, pkfPopup, _,
+    pkfContextual, pkfCombo, pkfMenu , pkfTooltip,
 )
-const panelNone* = PanelKindFlag 0
+const pkfNone* = PanelKindFlag 0
 
-type ConvertResult* = distinct uint32
-ConvertResult.gen_bit_ops convertInvalidParam, convertCmdBufFull, convertVtxBufFull, convertElemBufFull
-const convertSuccess* = ConvertResult 0
+type ConvertResultFlag* = distinct uint32
+ConvertResultFlag.gen_bit_ops crfInvalidParam, crfCmdBufFull, crfVtxBufFull, crfElemBufFull
+const crfSuccess* = ConvertResultFlag 0
 
 type EditFlag* = distinct uint32
 EditFlag.gen_bit_ops(
-    editReadOnly          , editAutoSelect      , editSigEnter , editAllowTab,
-    editNoCursor          , editSelectable      , editClipboard, editCtrlEnterNewline,
-    editNoHorizontalScroll, editAlwaysInsertMode, editMultiline, editGotoEndOnActivate,
+    efReadOnly          , efAutoSelect      , efSigEnter , efAllowTab,
+    efNoCursor          , efSelectable      , efClipboard, efCtrlEnterNewline,
+    efNoHorizontalScroll, efAlwaysInsertMode, efMultiline, efGotoEndOnActivate,
 )
-const editDefault* = EditFlag 0
+const efDefault* = EditFlag 0
 
 type EditEventFlag* = distinct uint32
-EditEventFlag.gen_bit_ops editActive, editInactive, editActivated, editDeactivated, editCommited
+EditEventFlag.gen_bit_ops eefActive, eefInactive, eefActivated, eefDeactivated, eefCommited
+
+type ChartEvent* = distinct uint32
+ChartEvent.gen_bit_ops ceHovering, ceClicked
 
 #[ -------------------------------------------------------------------- ]#
 
 const
     # This is for `PanelSet`
-    PSetNonBlock = panelContextual or panelCombo or panelMenu or panelTooltip
-    PSetPopup    = PSetNonBlock or panelPopup
-    PSetSub      = PSetPopup or panelGroup
+    PSetNonBlock = pkfContextual or pkfCombo or pkfMenu or pkfTooltip
+    PSetPopup    = PSetNonBlock or pkfPopup
+    PSetSub      = PSetPopup or pkfGroup
 
     # This is for `EditKind`
-    EKindSimple = editAlwaysInsertMode
-    EKindField  = EKindSimple or editSelectable or editClipboard
-    EKindBox    = editAlwaysInsertMode or editSelectable or editMultiline or editAllowTab or editClipboard
-    EKindEditor = editSelectable or editMultiline or editAllowTab or editClipboard
+    EKindSimple = efAlwaysInsertMode
+    EKindField  = EKindSimple or efSelectable or efClipboard
+    EKindBox    = efAlwaysInsertMode or efSelectable or efMultiline or efAllowTab or efClipboard
+    EKindEditor = efSelectable or efMultiline or efAllowTab or efClipboard
 
 type
-    Heading* {.size: sizeof(cint).} = enum
+    Heading* {.size: sizeof(uint32).} = enum
         hUp
         hRight
         hDown
         hLeft
 
-    ButtonBehaviour* {.size: sizeof(cint).} = enum
+    ButtonBehaviour* {.size: sizeof(uint32).} = enum
         bbDefault
         bbRepeater
 
-    Modify* {.size: sizeof(cint).} = enum
+    Modify* {.size: sizeof(uint32).} = enum
         mFixed
         mModifiable
 
-    Orientation* {.size: sizeof(cint).} = enum
+    Orientation* {.size: sizeof(uint32).} = enum
         oVertical
         oHorizontal
 
-    CollapseState* {.size: sizeof(cint).} = enum
-        csMinimized
-        csMaximized
+    CollapseState* {.size: sizeof(uint32).} = enum
+        csMinimised
+        csMaximised
 
-    ShowState* {.size: sizeof(cint).} = enum
+    ShowState* {.size: sizeof(uint32).} = enum
         ssHidden
         ssShown
 
-    ChartEvent* {.size: sizeof(cint).} = enum
-        ceHovering = 0x01
-        ceClicked  = 0x02
-
-    ColourFormat* {.size: sizeof(cint).} = enum
+    ColourFormat* {.size: sizeof(uint32).} = enum
         cfRgb
         cfRgba
 
-    PopupKind* {.size: sizeof(cint).} = enum
+    PopupKind* {.size: sizeof(uint32).} = enum
         pkStatic
         pkDynamic
 
-    LayoutFormat* {.size: sizeof(cint).} = enum
+    LayoutFormat* {.size: sizeof(uint32).} = enum
         lfDynamic
         lfStatic
 
-    SymbolKind* {.size: sizeof(cint).} = enum
+    SymbolKind* {.size: sizeof(uint32).} = enum
         skNone
         skX
         skUnderscore
@@ -136,28 +136,28 @@ type
         skTriLeftOutline
         skTriRightOutline
 
-    AllocationKind* {.size: sizeof(cint).} = enum
+    AllocationKind* {.size: sizeof(uint32).} = enum
         akFixed
         akDynamic
 
-    BufferAllocationKind* {.size: sizeof(cint).} = enum
+    BufferAllocationKind* {.size: sizeof(uint32).} = enum
         bakFront
         bakBack
         bakMax
 
     #[ ---------------------------------------------------------------- ]#
 
-    AntiAliasing* {.size: sizeof(cint).} = enum
+    AntiAliasing* {.size: sizeof(uint32).} = enum
         aaOff
         aaOn
 
-    DrawVertexLayoutAttribute* {.size: sizeof(cint).} = enum
+    DrawVertexLayoutAttribute* {.size: sizeof(uint32).} = enum
         dvlaPosition
         dvlaColour
         dvlaTexcoord
         dvlaEnd
 
-    DrawVertexLayoutFormat* {.size: sizeof(cint).} = enum
+    DrawVertexLayoutFormat* {.size: sizeof(uint32).} = enum
         dvlfSchar
         dvlfSshort
         dvlfSint
@@ -181,7 +181,7 @@ type
 
         dvlfEnd
 
-    CommandKind* {.size: sizeof(cint).} = enum
+    CommandKind* {.size: sizeof(uint32).} = enum
         ckNop
         ckScissor
         ckLine
@@ -202,27 +202,27 @@ type
         ckImage
         ckCustom
 
-    CommandClipping* {.size: sizeof(cint).} = enum
+    CommandClipping* {.size: sizeof(uint32).} = enum
         ccOff = false
         ccOn  = true
 
-    DrawListStroke* {.size: sizeof(cint).} = enum
+    DrawListStroke* {.size: sizeof(uint32).} = enum
         dlsOpen   = false
         dlsClosed = true
 
     #[ ---------------------------------------------------------------- ]#
 
-    FontAtlasFormat* {.size: sizeof(cint).} = enum
+    FontAtlasFormat* {.size: sizeof(uint32).} = enum
         fafAlpha8
         fafRgba32
 
-    FontCoordKind* {.size: sizeof(cint).} = enum
+    FontCoordKind* {.size: sizeof(uint32).} = enum
         fckUv
         fckPixel
     
     #[ ---------------------------------------------------------------- ]#
 
-    KeyKind* {.size: sizeof(cint).} = enum
+    KeyKind* {.size: sizeof(uint32).} = enum
         kkNone
         kkShift
         kkCtrl
@@ -254,7 +254,7 @@ type
         kkScrollDown
         kkScrollUp
 
-    Button* {.size: sizeof(cint).} = enum
+    Button* {.size: sizeof(uint32).} = enum
         bLeft
         bMiddle
         bRight
@@ -262,14 +262,14 @@ type
 
     #[ ---------------------------------------------------------------- ]#
 
-    WidgetAlignment* {.size: sizeof(cint).} = enum
-        waLeft    = widgetAlignMiddle or widgetAlignLeft
-        waCentred = widgetAlignMiddle or widgetAlignCentred
-        waRight   = widgetAlignMiddle or widgetAlignRight
+    WidgetAlignment* {.size: sizeof(uint32).} = enum
+        waLeft    = wafMiddle or wafLeft
+        waCentred = wafMiddle or wafCentred
+        waRight   = wafMiddle or wafRight
 
     #[ ---------------------------------------------------------------- ]#
 
-    StyleColours* {.size: sizeof(cint).} = enum
+    StyleColours* {.size: sizeof(uint32).} = enum
         scText
         scWin
         scHeader
@@ -299,7 +299,7 @@ type
         scScrollbarCursorActive
         scTabHeader
 
-    StyleCursor* {.size: sizeof(cint).} = enum
+    StyleCursor* {.size: sizeof(uint32).} = enum
         scArrow
         scText
         scMove
@@ -308,57 +308,57 @@ type
         scResizeTopLeftDownRight
         scResizeTopRightDownLeft
 
-    StyleItemKind* {.size: sizeof(cint).} = enum
+    StyleItemKind* {.size: sizeof(uint32).} = enum
         sikColour
         sikImage
         sikNineSlice
 
-    StyleHeaderAlign* {.size: sizeof(cint).} = enum
+    StyleHeaderAlign* {.size: sizeof(uint32).} = enum
         shaLeft
         shaRight
 
     #[ ---------------------------------------------------------------- ]#
 
-    TextAlignment* {.size: sizeof(cint).} = enum
-        taLeft    = textAlignMiddle or textAlignLeft
-        taCentred = textAlignMiddle or textAlignCentred
-        taRight   = textAlignMiddle or textAlignRight
+    TextAlignment* {.size: sizeof(uint32).} = enum
+        taLeft    = tafMiddle or tafLeft
+        taCentred = tafMiddle or tafCentred
+        taRight   = tafMiddle or tafRight
 
-    TextEditKind* {.size: sizeof(cint).} = enum
+    TextEditKind* {.size: sizeof(uint32).} = enum
         ekSingleLine
         ekMultiline
 
-    TextEditMode* {.size: sizeof(cint).} = enum
+    TextEditMode* {.size: sizeof(uint32).} = enum
         temView
         temInsert
         temReplace
 
     #[ ---------------------------------------------------------------- ]#
 
-    TreeKind* {.size: sizeof(cint).} = enum
+    TreeKind* {.size: sizeof(uint32).} = enum
         tkNode
         tkTab
 
     #[ ---------------------------------------------------------------- ]#
 
-    WidgetLayoutState* {.size: sizeof(cint).} = enum
+    WidgetLayoutState* {.size: sizeof(uint32).} = enum
         wlsInvalid
         wlsValid
         wlsRom
         wlsDisabled
 
-    ChartKind* {.size: sizeof(cint).} = enum
+    ChartKind* {.size: sizeof(uint32).} = enum
         ckLine
         ckColumn
 
     #[ ---------------------------------------------------------------- ]#
 
-    PanelSet* {.size: sizeof(cint).} = enum
+    PanelSet* {.size: sizeof(uint32).} = enum
         psNonBlock = PSetNonBlock
         psPopup    = PSetPopup
         psSub      = PSetSub
 
-    PanelRowLayout* {.size: sizeof(cint).} = enum
+    PanelRowLayout* {.size: sizeof(uint32).} = enum
         prlDynamicFixed
         prlDynamicRow
         prlDynamicFree
@@ -369,11 +369,11 @@ type
         prlStatic
         prlTemplate
 
-    EditKind* {.size: sizeof(cint).} = enum
+    EditKind* {.size: sizeof(uint32).} = enum
         ekSimple = EKindSimple
         ekField  = EKindField
-        ekBox    = EKindBox
         ekEditor = EKindEditor
+        ekBox    = EKindBox
 
 const FmtColourStart = dvlfR8G8B8
 const FmtColourEnd   = dvlfRgba32
@@ -434,11 +434,11 @@ type
         buf*: Buffer
         len*: int32
 
-    PluginAlloc*  = proc(handle: Handle; old: pointer; sz: uint): pointer {.nimcall.}
-    PluginFree*   = proc(handle: Handle; old: pointer) {.nimcall.}
-    PluginFilter* = proc(text_edit: ptr TextEdit; unicode: Rune): bool {.nimcall.}
-    PluginPaste*  = proc(handle: Handle; text_edit: ptr TextEdit) {.nimcall.}
-    PluginCopy*   = proc(handle: Handle; str: cstring; len: cint) {.nimcall.}
+    PluginAlloc*  = proc(handle: Handle; old: pointer; sz: uint): pointer {.cdecl, raises: [].}
+    PluginFree*   = proc(handle: Handle; old: pointer)                    {.cdecl, raises: [].}
+    PluginFilter* = proc(text_edit: ptr TextEdit; unicode: Rune): bool    {.cdecl, raises: [].}
+    PluginPaste*  = proc(handle: Handle; text_edit: ptr TextEdit)         {.cdecl, raises: [].}
+    PluginCopy*   = proc(handle: Handle; str: cstring; len: cint)         {.cdecl, raises: [].}
 
     MemoryStatus* = object
         mem*    : pointer
@@ -479,7 +479,7 @@ type
         style*            : Style
         mem*              : Buffer
         clip*             : Clipboard
-        last_widget_state*: WidgetState
+        last_widget_state*: WidgetStateFlag
         btn_behaviour*    : ButtonBehaviour
         stacks*           : ConfigurationStacks
         dt_secs*          : cfloat
@@ -537,7 +537,7 @@ type
 
     #[ ---------------------------------------------------------------- ]#
 
-    CommandCustomCallback* = proc(canvas: pointer; x, y: cshort; w, h: cushort; cb_data: Handle)
+    CommandCustomCallback* = proc(canvas: pointer; x, y: cshort; w, h: cushort; cb_data: Handle) {.cdecl, raises: [].}
 
     DrawNullTexture* = object
         tex*: Handle
@@ -580,9 +580,9 @@ type
         clip_rect*  : Rect
         circle_vtx* : array[12, Vec2]
         cfg*        : ConvertConfig
-        buf*        : Buffer
-        vertices*   : Buffer
-        elems*      : Buffer
+        buf*        : ptr Buffer
+        vertices*   : ptr Buffer
+        elems*      : ptr Buffer
         elem_count* : cuint
         vtx_count*  : cuint
         cmd_count*  : cuint
@@ -728,8 +728,8 @@ type
 
     #[ ---------------------------------------------------------------- ]#
 
-    TextWidthFn*      = proc(handle: Handle; h: cfloat; text: cstring; len: cint): cfloat
-    QueryFontGlyphFn* = proc(handle: Handle; font_h: cfloat; glyph: ptr UserFontGlyph; codepoint, next_codepoint: Rune)
+    TextWidthFn*      = proc(handle: Handle; h: cfloat; text: cstring; len: cint): cfloat                               {.cdecl, raises: [].}
+    QueryFontGlyphFn* = proc(handle: Handle; font_h: cfloat; glyph: ptr UserFontGlyph; codepoint, next_codepoint: Rune) {.cdecl, raises: [].}
 
     UserFont* = object
         user_data*: Handle
@@ -845,7 +845,7 @@ type
     #[ ---------------------------------------------------------------- ]#
 
     ConfigurationStacks* = object
-        style_items*   : ConfigStackStyle
+        style_items*   : ConfigStackStyleItem
         floats*        : ConfigStackFloat
         vectors*       : ConfigStackVec2
         flags*         : ConfigStackFlag
@@ -853,7 +853,7 @@ type
         user_fonts*    : ConfigStackUserFont
         btn_behaviours*: ConfigStackButtonBehaviour
 
-    ConfigStackStyle* = object
+    ConfigStackStyleItem* = object
         head* : cint
         elems*: array[NkStyleItemStackSize, tuple[address: ptr StyleItem, old_val: StyleItem]]
     ConfigStackFloat* = object
@@ -870,7 +870,7 @@ type
         elems*: array[NkColourStackSize, tuple[address: ptr Colour, old_val: Colour]]
     ConfigStackUserFont* = object
         head* : cint
-        elems*: array[NkUserFontStackSize, tuple[address: ptr UserFont, old_val: UserFont]]
+        elems*: array[NkUserFontStackSize, tuple[address: ptr ptr UserFont, old_val: ptr UserFont]]
     ConfigStackButtonBehaviour* = object
         head* : cint
         elems*: array[NkButtonBehaviourStackSize, tuple[address: ptr ButtonBehaviour, old_val: ButtonBehaviour]]
@@ -878,7 +878,7 @@ type
     #[ ---------------------------------------------------------------- ]#
 
     Style* = object
-        font*          : UserFont
+        font*          : ptr UserFont
         cursors*       : array[1 + int StyleCursor.high, ptr Cursor]
         cursor_active* : ptr Cursor
         cursor_last*   : ptr Cursor
@@ -892,15 +892,16 @@ type
         checkbox*      : StyleToggle
         selectable*    : StyleSelectable
         slider*        : StyleSlider
+        knob*          : StyleKnob
         progress*      : StyleProgress
-        property*      : StyleProperty
+        prop*          : StyleProperty
         edit*          : StyleEdit
         chart*         : StyleChart
         scroll_h*      : StyleScrollbar
         scroll_v*      : StyleScrollbar
         tab*           : StyleTab
         combo*         : StyleCombo
-        window*        : StyleWindow
+        win*           : StyleWindow
 
     StyleItemData* {.union.} = object
         colour*: Colour
@@ -939,8 +940,8 @@ type
         disabled_factor*: cfloat
 
         user_data* : Handle
-        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle)
-        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle)
+        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle) {.cdecl, raises: [].}
+        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle) {.cdecl, raises: [].}
 
     StyleToggle* = object
         normal*       : StyleItem
@@ -965,8 +966,8 @@ type
         disabled_factor*: cfloat
 
         user_data* : Handle
-        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle)
-        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle)
+        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle) {.cdecl, raises: [].}
+        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle) {.cdecl, raises: [].}
 
     StyleSelectable* = object
         normal* : StyleItem
@@ -996,8 +997,8 @@ type
         disabled_factor*: cfloat
 
         user_data* : Handle
-        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle)
-        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle)
+        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle) {.cdecl, raises: [].}
+        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle) {.cdecl, raises: [].}
 
     StyleSlider* = object
         normal*       : StyleItem
@@ -1030,8 +1031,35 @@ type
         dec_sym*  : SymbolKind
 
         user_data* : Handle
-        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle)
-        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle)
+        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle) {.cdecl, raises: [].}
+        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle) {.cdecl, raises: [].}
+
+    StyleKnob* = object
+        normal*       : StyleItem
+        hover*        : StyleItem
+        active*       : StyleItem
+        border_colour*: Colour
+
+        knob_normal*       : Colour
+        knob_hover*        : Colour
+        knob_active*       : Colour
+        knob_border_colour*: Colour
+
+        cursor_normal*: Colour
+        cursor_hover* : Colour
+        cursor_active*: Colour
+
+        border*         : cfloat
+        knob_border*    : cfloat
+        padding*        : Vec2
+        spacing*        : Vec2
+        cursor_w*       : cfloat
+        colour_factor*  : cfloat
+        disabled_factor*: cfloat
+
+        user_data* : Handle
+        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle) {.cdecl, raises: [].}
+        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle) {.cdecl, raises: [].}
 
     StyleProgress* = object
         normal*       : StyleItem
@@ -1053,8 +1081,8 @@ type
         disabled_factor*: cfloat
 
         user_data* : Handle
-        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle)
-        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle)
+        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle) {.cdecl, raises: [].}
+        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle) {.cdecl, raises: [].}
 
     StyleScrollbar* = object
         normal*       : StyleItem
@@ -1082,8 +1110,8 @@ type
         dec_sym*  : SymbolKind
 
         user_data* : Handle
-        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle)
-        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle)
+        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle) {.cdecl, raises: [].}
+        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle) {.cdecl, raises: [].}
 
     StyleEdit* = object
         normal*       : StyleItem
@@ -1139,8 +1167,8 @@ type
         dec_btn*: StyleButton
 
         user_data* : Handle
-        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle)
-        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle)
+        draw_begin*: proc(buf: ptr CommandBuffer; user_data: Handle) {.cdecl, raises: [].}
+        draw_end*  : proc(buf: ptr CommandBuffer; user_data: Handle) {.cdecl, raises: [].}
 
     StyleChart* = object
         bg*             : StyleItem
@@ -1430,12 +1458,25 @@ type
 
 #[ -------------------------------------------------------------------- ]#
 
-proc nk_free*(ctx: ptr Context)                   {.importc: "nk_free"              .}
-proc nk_buffer_free*(buf: ptr Buffer)             {.importc: "nk_buffer_free"       .}
-proc nk_font_atlas_cleanup*(atlas: ptr FontAtlas) {.importc: "nk_font_atlas_cleanup".}
+proc nk_free*(ctx: ptr Context)                   {.importc.}
+proc nk_buffer_free*(buf: ptr Buffer)             {.importc.}
+proc nk_font_atlas_cleanup*(atlas: ptr FontAtlas) {.importc.}
 
 proc `=destroy`*(ctx: Context)     = nk_free ctx.addr
 proc `=destroy`*(buf: Buffer)      = nk_buffer_free buf.addr
 proc `=destroy`*(atlas: FontAtlas) = nk_font_atlas_cleanup atlas.addr
 
 converter `EditKind -> EditFlag`*(flag: EditKind): EditFlag = cast[EditFlag](flag)
+
+converter panel_flag_to_window_flag*(flag: PanelFlag): WindowFlag = WindowFlag flag
+converter window_flag_to_panel_flag*(flag: WindowFlag): PanelFlag = PanelFlag flag
+
+func nk_vec*(x, y: float32): Vec2                     = Vec2(x: cfloat x, y: cfloat y)
+func nk_vec*(x, y: int16): Vec2I                      = Vec2I(x: cshort x, y: cshort y)
+func nk_rect*(x, y, w, h: float32): Rect              = Rect(x: cfloat x, y: cfloat y, w: cfloat w, h: cfloat h)
+func nk_rect*(x, y, w, h: int16): RectI               = RectI(x: cshort x, y: cshort y, w: cshort w, h: cshort h)
+
+func nk_colour*(r, g, b: uint8; a = 255'u8): Colour   = Colour(r: r, g: g, b: b, a: a)
+func nk_colour*(rgba: array[4, uint8]): Colour        = Colour(r: rgba[0], g: rgba[1], b: rgba[2], a: rgba[3])
+func nk_colour*(rgb: array[3, uint8]): Colour         = Colour(r: rgb[0], g: rgb[1], b: rgb[2], a: 255)
+func nk_colour*(r, g, b: float32; a = 1'f32): ColourF = ColourF(r: r, g: g, b: b, a: a)

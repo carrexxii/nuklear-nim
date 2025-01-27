@@ -13,17 +13,6 @@ import common
 # NK_API nk_bool nk_list_view_begin(struct nk_context*, struct nk_list_view *out, const char *id, nk_flags, int row_height, int row_count);
 # NK_API void nk_list_view_end(struct nk_list_view*);
 
-# Contextual
-# NK_API nk_bool nk_contextual_begin(struct nk_context*, nk_flags, struct nk_vec2, struct nk_rect trigger_bounds);
-# NK_API nk_bool nk_contextual_item_text(struct nk_context*, const char*, int,nk_flags align);
-# NK_API nk_bool nk_contextual_item_label(struct nk_context*, const char*, nk_flags align);
-# NK_API nk_bool nk_contextual_item_image_label(struct nk_context*, struct nk_image, const char*, nk_flags alignment);
-# NK_API nk_bool nk_contextual_item_image_text(struct nk_context*, struct nk_image, const char*, int len, nk_flags alignment);
-# NK_API nk_bool nk_contextual_item_symbol_label(struct nk_context*, enum nk_symbol_type, const char*, nk_flags alignment);
-# NK_API nk_bool nk_contextual_item_symbol_text(struct nk_context*, enum nk_symbol_type, const char*, int, nk_flags alignment);
-# NK_API void nk_contextual_close(struct nk_context*);
-# NK_API void nk_contextual_end(struct nk_context*);
-
 
 # /* =============================================================================
 #  *
