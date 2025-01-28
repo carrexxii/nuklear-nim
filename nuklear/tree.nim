@@ -25,9 +25,14 @@ using
 
 {.push inline.}
 
-proc push_tree*(ctx; kind; title; state: var CollapseState): bool =
+proc push_tree*(ctx; kind; title; state: var CollapseState): bool {.deprecated.} =
     nk_tree_state_push ctx.addr, kind, cstring title, state.addr
-proc push_tree*(ctx; kind; img: Image; title; state: var CollapseState): bool =
+proc push_tree*(ctx; kind; img: Image; title; state: var CollapseState): bool {.deprecated.} =
+    nk_tree_state_image_push ctx.addr, kind, img, cstring title, state.addr
+
+proc push_tree*(ctx; kind; state: var CollapseState; title): bool =
+    nk_tree_state_push ctx.addr, kind, cstring title, state.addr
+proc push_tree*(ctx; kind; state: var CollapseState; img: Image; title): bool =
     nk_tree_state_image_push ctx.addr, kind, img, cstring title, state.addr
 
 template push_tree*(ctx; kind; title; init_state = csMinimised): bool =

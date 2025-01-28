@@ -1,5 +1,7 @@
 import std/[macros, strutils], common
 
+const DefaultPopupFlags = pfClosable or pfTitle or pfBorder or pfNoScrollbar
+
 using
     ctx      : ptr Context
     text     : cstring
@@ -87,6 +89,11 @@ proc nk_checkbox_text_align*(ctx; text; len: cint; active: ptr bool; widget_alig
 proc nk_checkbox_flags_label*(ctx; label; flags: ptr cuint; val: cuint): bool
 proc nk_checkbox_flags_text*(ctx; text; len: cint; flags: ptr cuint; val: cuint): bool
 
+proc nk_radio_label*(ctx; text; active: ptr bool): bool
+proc nk_radio_label_align*(ctx; text; active: ptr bool; walign: WidgetAlignment; align): bool
+proc nk_radio_text*(ctx; text; len: cint; active: ptr bool): bool
+proc nk_radio_text_align*(ctx; text; len: cint; active: ptr bool; walign: WidgetAlignment; align): bool
+
 proc nk_progress*(ctx; sz: ptr uint; max: uint; modifiable: bool): bool
 proc nk_prog*(ctx; cur, max: uint; modifiable: bool): bool
 
@@ -112,6 +119,13 @@ proc nk_selectable_image_label*(ctx; img; text; align; val: ptr bool): bool
 proc nk_selectable_image_text*(ctx; img; text; len: cint; align; val: ptr bool): bool
 proc nk_selectable_symbol_label*(ctx; sym; text; align; val: ptr bool): bool
 proc nk_selectable_symbol_text*(ctx; sym; text; len: cint; align; val: ptr bool): bool
+
+proc nk_select_label*(ctx; text; align; val: bool): bool
+proc nk_select_text*(ctx; text; len: cint; align; val: bool): bool
+proc nk_select_image_label*(ctx; img; text; align; val: bool): bool
+proc nk_select_image_text*(ctx; img; text; len: cint; align; val: bool): bool
+proc nk_select_symbol_label*(ctx; sym; text; align; val: bool): bool
+proc nk_select_symbol_text*(ctx; sym; text; len: cint; align; val: bool): bool
 
 proc nk_combo*(ctx; items: cStringArray; cnt, selected, item_h: cint; sz: Vec2): cint
 proc nk_combo_separator*(ctx; items: cstring; sep, selected, cnt, item_h: cint; sz: Vec2): cint
@@ -196,14 +210,25 @@ proc slider*[T: SomeInteger](ctx; val: var T; range: Slice[SomeInteger]; step = 
     result = nk_slider_int(ctx.addr, cint range.a, v.addr, cint range.b, cint step)
     val = T v
 
-proc progress_bar*(ctx; sz: var uint; max: uint; modifiable = false): bool {.discardable.} =
+proc progress_bar*(ctx; sz: var uint; max: uint; modifiable = false): bool {.discardable, deprecated.} =
     nk_progress ctx.addr, sz.addr, max, modifiable
 
+proc progress*(ctx; dst: var uint; max = 100u; modifiable = false): bool {.discardable.} =
+    nk_progress ctx.addr, dst.addr, max, modifiable
+
 # TODO: flags checkbox
-proc checkbox*(ctx; label: string; active: var bool; widget_align = waLeft; text_align = taLeft) =
+proc checkbox*(ctx; label: string; active: var bool; widget_align = waLeft; text_align = taLeft) {.deprecated.} =
     active = nk_check_text_align(ctx.addr, cstring label, cint label.len, active, widget_align, text_align)
-proc checkbox*(ctx; label: string; active: bool; widget_align = waLeft; text_align = taLeft): bool =
+proc checkbox*(ctx; label: string; active: bool; widget_align = waLeft; text_align = taLeft): bool {.deprecated.} =
     nk_check_text_align(ctx.addr, cstring label, cint label.len, active, widget_align, text_align)
+
+proc checkbox*(ctx; active: var bool; label: string; widget_align = waLeft; text_align = taLeft) =
+    active = nk_check_text_align(ctx.addr, cstring label, cint label.len, active, widget_align, text_align)
+proc checkbox*(ctx; active: bool; label: string; widget_align = waLeft; text_align = taLeft): bool =
+    nk_check_text_align(ctx.addr, cstring label, cint label.len, active, widget_align, text_align)
+
+proc radio*(ctx; dst: var bool; text; walign = waLeft; talign = taLeft): bool {.discardable.} =
+    nk_radio_text_align ctx.addr, cstring text, cint text.len, dst.addr, walign, talign
 
 proc selectable*(ctx; text; val: var bool; align = taLeft): bool {.discardable.} =
     nk_selectable_text ctx.addr, cstring text, cint text.len, align, val.addr
@@ -212,7 +237,6 @@ proc selectable*(ctx; text; img; val: var bool; align = taLeft): bool {.discarda
 proc selectable*(ctx; text; sym; val: var bool; align = taLeft): bool {.discardable.} =
     nk_selectable_symbol_text ctx.addr, sym, cstring text, cint text.len, align, val.addr
 
-const DefaultPopupFlags = pfClosable or pfClosable or pfTitle
 proc start_popup*(ctx; kind: PopupKind; title: string; bounds: Rect; flags = DefaultPopupFlags): bool =
     nk_popup_begin ctx.addr, kind, cstring title, flags, bounds
 proc stop_popup*(ctx)  = nk_popup_end   ctx.addr
@@ -222,7 +246,7 @@ proc popup_scroll*(ctx): tuple[x, y: uint32] =
     var x, y = cuint 0
     nk_popup_get_scroll ctx.addr, x.addr, y.addr
     (uint32 x, uint32 y)
-proc `popupscroll=`*(ctx; offset: tuple[x, y: uint32]) =
+proc `popup_scroll=`*(ctx; offset: tuple[x, y: uint32]) =
     nk_popup_set_scroll ctx.addr, cuint offset.x, cuint offset.y
 
 proc combobox*(ctx; items: string; sep: char; cnt, selected, item_h: int32; sz: array[2, float32]): int32 =
@@ -305,12 +329,16 @@ proc option*(ctx; text; is_active: bool; widget_align, text_align: TextAlignment
 proc start_menubar*(ctx) = nk_menubar_begin ctx.addr
 proc stop_menubar*(ctx)  = nk_menubar_end   ctx.addr
 
-proc start_menu*(ctx; text; sz: array[2, float32]; align = taLeft): bool =
+proc start_menu*(ctx; text; sz: array[2, float32]; align = taLeft): bool {.deprecated.} =
     nk_menu_begin_text ctx.addr, cstring text, cint text.len, align, sz
-proc start_menu*(ctx; text; img; sz: array[2, float32]; align = taLeft): bool =
+proc start_menu*(ctx; text; img; sz: array[2, float32]; align = taLeft): bool {.deprecated.} =
     nk_menu_begin_image_text ctx.addr, cstring text, cint text.len, align, img, sz
-proc start_menu*(ctx; text; sym; sz: array[2, float32]; align = taLeft): bool =
+proc start_menu*(ctx; text; sym; sz: array[2, float32]; align = taLeft): bool {.deprecated.} =
     nk_menu_begin_symbol_text ctx.addr, cstring text, cint text.len, align, sym, sz
+
+proc start_menu*(ctx; text; sz: Vec2; align = taLeft): bool      = nk_menu_begin_text        ctx.addr, cstring text, cint text.len, align, sz
+proc start_menu*(ctx; text; img; sz: Vec2; align = taLeft): bool = nk_menu_begin_image_text  ctx.addr, cstring text, cint text.len, align, img, sz
+proc start_menu*(ctx; text; sym; sz: Vec2; align = taLeft): bool = nk_menu_begin_symbol_text ctx.addr, cstring text, cint text.len, align, sym, sz
 
 proc menu_item*(ctx; text; align = taLeft): bool      = nk_menu_item_text        ctx.addr     , cstring text, cint text.len, align
 proc menu_item*(ctx; text; img; align = taLeft): bool = nk_menu_item_image_text  ctx.addr, img, cstring text, cint text.len, align
@@ -423,15 +451,167 @@ macro menubar*(ctx; h: float32; menu_sz: array[2, float32]; menus: untyped): unt
     result.add quote do:
         `ctx`.stop_menubar()
 
-# Radio
-# NK_API nk_bool nk_radio_label(struct nk_context*, const char*, nk_bool *active);
-# NK_API nk_bool nk_radio_label_align(struct nk_context *ctx, const char *label, nk_bool *active, nk_flags widget_alignment, nk_flags text_alignment);
-# NK_API nk_bool nk_radio_text(struct nk_context*, const char*, int, nk_bool *active);
-# NK_API nk_bool nk_radio_text_align(struct nk_context *ctx, const char *text, int len, nk_bool *active, nk_flags widget_alignment, nk_flags text_alignment);
+#[ -------------------------------------------------------------------- ]#
 
-# NK_API nk_bool nk_select_label(struct nk_context*, const char*, nk_flags align, nk_bool value);
-# NK_API nk_bool nk_select_text(struct nk_context*, const char*, int, nk_flags align, nk_bool value);
-# NK_API nk_bool nk_select_image_label(struct nk_context*, struct nk_image,const char*, nk_flags align, nk_bool value);
-# NK_API nk_bool nk_select_image_text(struct nk_context*, struct nk_image,const char*, int, nk_flags align, nk_bool value);
-# NK_API nk_bool nk_select_symbol_label(struct nk_context*,enum nk_symbol_type,  const char*, nk_flags align, nk_bool value);
-# NK_API nk_bool nk_select_symbol_text(struct nk_context*,enum nk_symbol_type, const char*, int, nk_flags align, nk_bool value);
+template prepend(ctx; elem: NimNode) =
+    if elem.kind in CallNodes:
+        elem.insert 1, ctx
+
+template StaticRow*(ctx; cols: Natural; w: SomeNumber; h: SomeNumber): untyped =
+    ctx.static_row cols, float32 w, float32 h
+
+template RowWidth*(ctx; w: SomeNumber): untyped =
+    ctx.push_row float32 w
+
+template Label*(ctx; text: string; align = taLeft): untyped =
+    label ctx, text, align
+
+template LabelWrap*(ctx; text: string): untyped =
+    label_wrap ctx, text
+
+template Progress*(ctx; dst: var uint; max = 100u; modifiable = false): untyped =
+    progress ctx, dst, max, modifiable
+
+template Slider*(ctx; dst; range; step = 1): untyped =
+    slider ctx, dst, range, step
+
+template Checkbox*(ctx; dst: var bool; text: string; widget_align = waLeft; text_align = taLeft): untyped =
+    checkbox ctx, dst, text, widget_align, text_align
+
+template MenuItem*(ctx; name: string; body; align = taLeft): untyped =
+    if ctx.menu_item name:
+        body
+
+macro MenuBar*(ctx; cols: Natural; item_w: typed; body): untyped =
+    ## Usage:
+    ## ```nim
+    ## MenuBar 5, 0
+    ## MenuBar 5, [0.1f, 0.15, 0.2, 0.2, 0.1]
+    ## MenuBar 5, 85
+    ## MenuBar 5, [60, 85, 100, 100, 80]
+    ## ```
+    var static_layout = false
+    var layouting =
+        if `item_w`.type_kind in {ntyInt..ntyUInt64}:
+            quote do:
+                if `item_w` > 0:
+                    `ctx`.static_row cint `cols`, `item_w`
+                else:
+                    `ctx`.dynamic_row cint `cols`
+        else:
+            static_layout = true
+            let fmt =  if `item_w`[0].type_kind in {ntyFloat..ntyFloat128}: lfDynamic else: lfStatic
+            quote do:
+                start_layout `ctx`, `fmt`, cint `cols`, 0
+
+
+    var inner = new_stmt_list()
+    var i = 0
+    for elem in body:
+        if static_layout:
+            inner.add quote do:
+                `ctx`.push_row cfloat `item_w`[`i`]
+            inc i
+
+        ctx.prepend elem
+        inner.add elem
+    if static_layout:
+        inner.add quote do:
+            stop_layout `ctx`
+
+    quote do:
+        start_menubar `ctx`
+        `layouting`
+        `inner`
+        stop_menubar `ctx`
+
+macro StartMenu*(ctx; name: string; sz; body): untyped =
+    sz.expect_len 2
+
+    var inner = new_stmt_list()
+    for elem in body:
+        case elem.kind
+        of CallNodes:
+            if elem[0].kind == nnkStrLit:
+                # Add an automatic row layout for string menu items
+                if inner.len == 0:
+                    inner.add quote do:
+                        `ctx`.dynamic_row 1
+
+                var if_body: NimNode
+                let title = elem[0]
+                var align = ident $taCentred
+                if elem[1].kind == nnkIdent:
+                    if_body = elem[2]
+                    align   = elem[1]
+                else:
+                    if_body = elem[1]
+
+                inner.add quote do:
+                    `ctx`.MenuItem `title`, `if_body`, align = `align`
+            else:
+                ctx.prepend elem
+                inner.add elem
+        else:
+            inner.add elem
+
+    let w = sz[0]
+    let h = sz[1]
+    result = quote do:
+        if `ctx`.start_menu(`name`, nk_vec(float32 `w`, float32 `h`)):
+            `inner`
+            stop_menu `ctx`
+
+macro Tree*(ctx; kind: TreeKind; name: string; body): untyped =
+    var inner = new_stmt_list()
+    for elem in body:
+        if elem.kind in CallNodes:
+            elem.insert 1, ctx
+            inner.add elem
+        else:
+            inner.add elem
+
+    var state_name = gen_sym nskVar
+    quote do:
+        var `state_name` {.global.} = csMinimised
+        if `ctx`.push_tree(`kind`, `state_name`, `name`):
+            `inner`
+            pop_tree `ctx`
+
+template TabTree*(ctx; name: string; body): untyped  = Tree ctx, tkTab, name, body
+template NodeTree*(ctx; name: string; body): untyped = Tree ctx, tkNode, name, body
+
+template Chart*(ctx; kind: ChartKind; data: typed; range: Slice[typed]; h: SomeNumber): untyped =
+    ctx.dynamic_row 1, cfloat h
+    if ctx.start_chart(kind, int32 data.len, (float32 range.a)..(float32 range.b)):
+        for d in data:
+            discard ctx.push_chart cfloat d
+        stop_chart ctx
+
+template ColumnChart*(ctx; data: typed; range: Slice[SomeNumber]; h: SomeNumber): untyped = Chart ctx, ckColumn, data, range, h
+template LineChart*(ctx; data: typed; range: Slice[SomeNumber]; h: SomeNumber): untyped   = Chart ctx, ckLine  , data, range, h
+
+macro Popup*(ctx; kind: PopupKind; dst; title: string; rect: typed; body): untyped =
+    rect.expect_len 4
+
+    var inner = new_stmt_list()
+    for elem in body:
+        ctx.prepend elem
+        inner.add elem
+
+    quote do:
+        when not declared `dst`:
+            var `dst` {.global.}: bool
+        if `dst`:
+            let r = nk_rect(`rect`)
+            if `ctx`.start_popup(`kind`, `title`, r):
+                `dst` = true
+
+                `ctx`.dynamic_row 1
+                `inner`
+                stop_popup `ctx`
+            else:
+                `dst` = false
+
+template StaticPopup*(ctx; dst; title: string; rect: typed; body): untyped  = Popup ctx, pkStatic , dst, title, rect, body
+template DynamicPopup*(ctx; dst; title: string; rect: typed; body): untyped = Popup ctx, pkDynamic, dst, title, rect, body

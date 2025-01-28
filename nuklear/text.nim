@@ -66,8 +66,8 @@ let
     FilterOct*     = PluginFilter nk_filter_oct
     FilterBinary*  = PluginFilter nk_filter_binary
 
-proc label*(ctx; str; align = taLeft)      = nk_text      ctx.addr, cstring str, cint str.len, align
-proc label_wrap*(ctx; str; align = taLeft) = nk_text_wrap ctx.addr, cstring str, cint str.len
+proc label*(ctx; str; align = taLeft) = nk_text      ctx.addr, cstring str, cint str.len, align
+proc label_wrap*(ctx; str)            = nk_text_wrap ctx.addr, cstring str, cint str.len
 proc label*(ctx; str; r, g, b: uint8; a = 255'u8; align = taLeft) =
     let colour = Colour(r: r, g: g, b: b, a: a)
     nk_text_colored ctx.addr, cstring str, cint str.len, align, colour

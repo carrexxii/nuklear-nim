@@ -26,6 +26,7 @@ PanelFlag.gen_bit_ops(
     pfMinimisable, pfNoScrollbar, pfTitle   , pfScrollAutoHide,
     pfBackground , pfScaleLeft  , pfNoInput ,
 )
+const pfNone* = PanelFlag 0
 
 type WindowFlag* = distinct uint32
 WindowFlag.gen_bit_ops(
@@ -1471,12 +1472,14 @@ converter `EditKind -> EditFlag`*(flag: EditKind): EditFlag = cast[EditFlag](fla
 converter panel_flag_to_window_flag*(flag: PanelFlag): WindowFlag = WindowFlag flag
 converter window_flag_to_panel_flag*(flag: WindowFlag): PanelFlag = PanelFlag flag
 
-func nk_vec*(x, y: float32): Vec2                     = Vec2(x: cfloat x, y: cfloat y)
-func nk_vec*(x, y: int16): Vec2I                      = Vec2I(x: cshort x, y: cshort y)
-func nk_rect*(x, y, w, h: float32): Rect              = Rect(x: cfloat x, y: cfloat y, w: cfloat w, h: cfloat h)
-func nk_rect*(x, y, w, h: int16): RectI               = RectI(x: cshort x, y: cshort y, w: cshort w, h: cshort h)
+func nk_vec*(x, y: float32): Vec2        = Vec2(x: cfloat x, y: cfloat y)
+func nk_vec*(x, y: int16): Vec2I         = Vec2I(x: cshort x, y: cshort y)
+func nk_rect*(x, y, w, h: float32): Rect = Rect(x: cfloat x, y: cfloat y, w: cfloat w, h: cfloat h)
+func nk_rect*(x, y, w, h: int16): RectI  = RectI(x: cshort x, y: cshort y, w: cshort w, h: cshort h)
 
 func nk_colour*(r, g, b: uint8; a = 255'u8): Colour   = Colour(r: r, g: g, b: b, a: a)
 func nk_colour*(rgba: array[4, uint8]): Colour        = Colour(r: rgba[0], g: rgba[1], b: rgba[2], a: rgba[3])
 func nk_colour*(rgb: array[3, uint8]): Colour         = Colour(r: rgb[0], g: rgb[1], b: rgb[2], a: 255)
 func nk_colour*(r, g, b: float32; a = 1'f32): ColourF = ColourF(r: r, g: g, b: b, a: a)
+
+template nk_rect*(r: typed): Rect = nk_rect(float32 r[0], float32 r[1], float32 r[2], float32 r[3])

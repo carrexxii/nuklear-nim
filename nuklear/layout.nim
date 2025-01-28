@@ -48,18 +48,10 @@ proc bounds*(ctx): Rect = nk_layout_widget_bounds ctx.addr
 proc begin*(ctx; fmt: LayoutFormat; cols: SomeInteger; h: SomeNumber) {.deprecated.} =
     nk_layout_row_begin ctx.addr, fmt, cfloat h, cint cols
 
-proc layout_row*(ctx; fmt: LayoutFormat; cols: int32; ratio: openArray[float32]; h = 0'f32) =
-    assert cols <= ratio.len
-    nk_layout_row ctx.addr, fmt, cfloat h, cint cols, ratio[0].addr
-proc start_layout*(ctx; fmt: LayoutFormat; cols: int32; h = 0'f32) {.deprecated.} = nk_layout_row_begin ctx.addr, fmt, cfloat h, cint cols
+proc start_layout*(ctx; fmt: LayoutFormat; cols: int32; h = 0'f32) = nk_layout_row_begin ctx.addr, fmt, cfloat h, cint cols
 proc static_row*(ctx; cols: int32; item_w: float32; h = 0'f32)     = nk_layout_row_static ctx.addr, cfloat h, cint item_w, cint cols
 proc dynamic_row*(ctx; cols: int32; h = 0'f32)                     = nk_layout_row_dynamic ctx.addr, cfloat h, cint cols
-
-proc start_row*(ctx; fmt: LayoutFormat; cols: int32; h = 0'f32) = nk_layout_row_begin ctx.addr, fmt, cfloat h, cint cols
-proc stop_row*(ctx) = nk_layout_row_end ctx.addr
-
-proc row*(ctx; cols: SomeInteger; h: SomeNumber; item_w: SomeNumber) {.deprecated.} = nk_layout_row_static  ctx.addr, cfloat h, cint item_w, cint cols
-proc row*(ctx; cols: SomeInteger; h: SomeNumber)                     {.deprecated.} = nk_layout_row_dynamic ctx.addr, cfloat h, cint cols
+proc stop_layout*(ctx) = nk_layout_row_end ctx.addr
 
 proc push*(ctx; val: SomeNumber) {.deprecated.} =
     nk_layout_row_push ctx.addr, cfloat val
@@ -69,6 +61,16 @@ proc layout_push_row*(ctx; val: float32) {.deprecated.} =
 
 proc push_row*(ctx; val: float32) =
     nk_layout_row_push ctx.addr, cfloat val
+
+proc layout_row*(ctx; fmt: LayoutFormat; cols: int32; ratio: openArray[float32]; h = 0'f32) =
+    assert cols <= ratio.len
+    nk_layout_row ctx.addr, fmt, cfloat h, cint cols, ratio[0].addr
+
+proc start_row*(ctx; fmt: LayoutFormat; cols: int32; h = 0'f32) = nk_layout_row_begin ctx.addr, fmt, cfloat h, cint cols
+proc stop_row*(ctx) = nk_layout_row_end ctx.addr
+
+proc row*(ctx; cols: SomeInteger; h: SomeNumber; item_w: SomeNumber) {.deprecated.} = nk_layout_row_static  ctx.addr, cfloat h, cint item_w, cint cols
+proc row*(ctx; cols: SomeInteger; h: SomeNumber)                     {.deprecated.} = nk_layout_row_dynamic ctx.addr, cfloat h, cint cols
 
 proc start_row_template*(ctx; h = 0'f32)          = nk_layout_row_template_begin         ctx.addr, cfloat h
 proc push_template_dynamic*(ctx)                  = nk_layout_row_template_push_dynamic  ctx.addr
